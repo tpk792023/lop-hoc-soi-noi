@@ -160,6 +160,59 @@ body.student #student{display:block}
 .dchip{border-radius:10px;padding:6px 12px;font-weight:700;font-size:clamp(15px,1.6vw,20px);background:color-mix(in srgb,var(--c) 20%,var(--card));border:2px solid color-mix(in srgb,var(--c) 50%,transparent);animation:pop .25s;cursor:pointer}
 .dchip.ok{border-color:var(--ok)}.dchip.no{border-color:var(--bad);background:var(--badbg)}
 .dstart{text-align:center;padding:30px 10px;font-size:20px;color:var(--mute)}
+.bigplay{font-size:18px;font-weight:800;color:#fff;border:none;border-radius:14px;padding:16px 30px;text-transform:uppercase;box-shadow:0 8px 22px rgba(80,80,200,.28)}
+.bigplay:hover{filter:brightness(1.08)}
+.bigplay.one{background:linear-gradient(90deg,#2563eb,#dc2626)}
+.bigplay.two{background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.tg{position:fixed;inset:0;z-index:80;background:#0f1729;color:#fff;display:flex;flex-direction:column}
+.tg[hidden]{display:none}
+.tgbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0b1222;flex-wrap:wrap}
+.tgb{background:#1b2540;color:#fff;border:1px solid #2c3a5c;border-radius:10px;padding:7px 14px;font-weight:700}
+.tgb:hover{border-color:#6b8cff}
+.tgmid{flex:1;display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+.tgpill{display:flex;align-items:center;gap:10px;padding:8px 20px;border-radius:999px;border:2px solid;font-weight:800;font-size:18px;background:#121b30}
+.tgpill.L{border-color:#3b6cf6}.tgpill.R{border-color:#e33}
+.tgpill i{width:12px;height:12px;border-radius:50%}.tgpill.L i{background:#3b82f6}.tgpill.R i{background:#ef4444}
+.tgpill em{font-style:normal;color:#facc15;font-size:20px;min-width:16px;text-align:center}
+.tgclock{font-size:clamp(26px,3.2vw,42px);font-weight:800;padding:4px 26px;border-radius:999px;background:#060b16;border:2px solid #2c3a5c;font-variant-numeric:tabular-nums}
+.tgclock.low{color:#f87171;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+.tgmain{flex:1;display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:16px;padding:16px;min-height:0}
+.tgside{border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.tgside.L{background:#1e3a8a;border:2px solid #3563e0}.tgside.R{background:#a3161d;border:2px solid #e23b3b}
+.tgq{flex:1.15;border-radius:14px;background:rgba(255,255,255,.13);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;padding:14px;line-height:1.22;white-space:pre-wrap;overflow:auto;min-height:0}
+.tgopts{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
+.tgopts.two{grid-template-columns:1fr 1fr}
+.tgopt{position:relative;background:#f6f7fb;color:#151b2b;border:none;border-radius:14px;font-weight:800;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px 10px;box-shadow:0 5px 0 rgba(0,0,0,.25);line-height:1.15;min-height:0;overflow:hidden}
+.tgside.R .tgopt{background:#fbf0f1}
+.tgopt kbd{position:absolute;left:8px;top:8px;font-size:12px;background:#5b6070;color:#fff;border-radius:5px;padding:1px 6px;font-family:inherit}
+.tgopt.ok{background:#22c55e!important;color:#fff}.tgopt.no{background:#ef4444!important;color:#fff;animation:shake .4s}
+.tgfield{background:#f3f4f6;border-radius:18px;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;position:relative}
+.tgfield svg{width:100%;height:100%}
+#tgRope{transition:transform .6s cubic-bezier(.3,1.5,.5,1)}
+.pullL .kid{animation:heaveL .7s ease-in-out infinite alternate}.pullR .kid{animation:heaveL .7s ease-in-out infinite alternate-reverse}
+@keyframes heaveL{to{transform:translateX(-4px)}}
+.yankL #tgRope .pullL .kid,.yankR #tgRope .pullR .kid{animation:none}
+.tgcover{position:absolute;inset:0;background:rgba(8,12,24,.84);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:5;text-align:center;padding:20px;color:#fff;font-size:18px}
+.tgcover[hidden]{display:none}
+.tgbig{font-size:clamp(30px,4vw,56px);font-weight:800}.tgsmall{font-size:22px;opacity:.85}
+.tgqr{background:#fff;border-radius:14px;padding:12px;align-self:center}
+.tgqr img,.tgqr canvas{display:block;max-width:100%;height:auto}
+.tgjoin{text-align:center;font-weight:700;font-size:18px}
+@media (max-width:900px){.tgmain{grid-template-columns:1fr 1fr;overflow:auto}.tgfield{grid-column:1/-1;order:-1;min-height:220px}}
+.tph{color:#fff;border-radius:16px;padding:14px;text-align:center;margin-bottom:12px}
+.tpclock{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.tpq{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 14px;font-size:22px;font-weight:800;text-align:center;white-space:pre-wrap;margin-bottom:12px}
+.tpopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tpopt{min-height:84px;font-size:20px;font-weight:800;border-width:3px;border-radius:14px;background:var(--card)}
+.tpopt.ok{background:#22c55e;color:#fff;border-color:#22c55e!important}.tpopt.no{background:#ef4444;color:#fff;border-color:#ef4444!important}
+.pickTop{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.pickTop .namebox{flex:1 1 260px}
+.wheelwrap{position:relative;flex:0 0 auto;width:min(440px,100%);aspect-ratio:1}
+.wheelwrap canvas{width:100%;height:100%;display:block}
+.wheelptr{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:34px solid #e11d48;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));z-index:2}
+.wheelhub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:23%;aspect-ratio:1;border-radius:50%;background:#fff;border:5px solid #1d2433;font-weight:800;font-size:clamp(13px,1.6vw,20px);color:#1d2433;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:0}
+.wheelhub:hover{background:#fef3c7}
 .done{background:var(--okbg);color:var(--ok);border-radius:12px;padding:12px;font-weight:600;margin:12px 0}
 </style>
 </head>
@@ -258,7 +311,8 @@ b) Phát biểu 2 | S
   <div class="grid2">
     <div class="card fs" id="pickStage">
       <div class="stage">
-        <div class="namebox" id="nameBox"><div>Bấm “Gọi tên”</div><div class="sub" id="nameSub">&nbsp;</div></div>
+        <div class="pickTop"><div class="wheelwrap" id="wheelWrap"><div class="wheelptr"></div><canvas id="wheel" width="880" height="880"></canvas><button class="wheelhub" id="wheelHub">QUAY</button></div>
+        <div class="namebox" id="nameBox"><div>Bấm “Gọi tên”</div><div class="sub" id="nameSub">&nbsp;</div></div></div>
         <div class="row">
           <button class="pri" id="btnPick" style="font-size:20px;padding:12px 26px">🎯 Gọi tên</button>
           <button id="btnAsk" style="font-size:18px;padding:11px 20px">❓ Câu hỏi</button>
@@ -281,6 +335,7 @@ b) Phát biểu 2 | S
       <div class="card">
         <h2>Cài đặt</h2>
         <label>Gọi</label>
+        <select id="pickStyle" style="margin-bottom:6px"><option value="wheel">🎡 Vòng quay may mắn</option><option value="flash">⚡ Chạy tên nhanh</option></select>
         <select id="pickMode"><option value="hs">Một học sinh trong lớp</option><option value="nhom">Một nhóm</option><option value="hsnhom">Một học sinh của nhóm đang chọn…</option></select>
         <select id="pickGroup" style="margin-top:6px;display:none"></select>
         <label class="row" style="color:var(--ink)"><input type="checkbox" id="pickNorep" style="width:auto"> Không gọi lại em đã được gọi <button class="sm" id="btnPickReset" style="margin-left:6px">Gọi lại từ đầu</button></label>
@@ -304,38 +359,22 @@ b) Phát biểu 2 | S
 
 <!-- ===== KÉO CO ===== -->
 <section class="tab" id="t-keoco">
-  <div class="card fs" id="tugStage">
-    <div class="row" style="margin-bottom:8px">
-      <input id="tugL" style="width:170px" placeholder="Đội trái">
-      <span class="mute">đấu với</span>
-      <input id="tugR" style="width:170px" placeholder="Đội phải">
-      <select id="tugPickTeams" style="width:auto"><option value="">Chọn từ nhóm…</option></select>
-      <span class="small mute">Kéo</span><input id="tugTarget" type="number" min="2" max="10" style="width:70px"><span class="small mute">bước thì thắng</span>
-      <span class="small mute">Mỗi câu</span><select id="tugSec" style="width:auto"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option></select><span class="small mute">giây</span>
-      <span class="small mute">Lấy câu hỏi</span><select id="tugSrc" style="width:auto"><option value="own">Câu hỏi kéo co (khung bên dưới)</option><option value="bank">Ngân hàng câu hỏi</option><option value="both">Cả hai</option></select>
-      <button class="sm ghost" data-fs="tugStage" style="margin-left:auto">⛶</button>
+  <div class="card">
+    <h2>💪 Kéo co – hai đội thi trả lời nhanh</h2>
+    <div class="mute small">Mỗi đội có câu hỏi riêng ở phía mình. Trả lời đúng là kéo dây về phía mình một bước, kéo nơ đỏ qua vạch của đội mình là thắng. Hết giờ thì đội đang kéo được về phía mình thắng.</div>
+    <div class="row" style="margin-top:6px;align-items:flex-end">
+      <div style="width:180px"><label>🔵 Đội trái</label><input id="tugL"></div>
+      <div style="width:180px"><label>🔴 Đội phải</label><input id="tugR"></div>
+      <div style="width:200px"><label>Hoặc chọn 2 nhóm</label><select id="tugPickTeams"><option value="">Chọn từ nhóm…</option></select></div>
+      <div style="width:120px"><label>Thời gian</label><select id="tugSec"><option value="60">1 phút</option><option value="90">1,5 phút</option><option value="120">2 phút</option><option value="180">3 phút</option><option value="300">5 phút</option></select></div>
+      <div style="width:120px"><label>Số bước thắng</label><input id="tugTarget" type="number" min="2" max="15"></div>
+      <div style="width:250px"><label>Lấy câu hỏi</label><select id="tugSrc"><option value="own">Câu hỏi kéo co (khung bên dưới)</option><option value="bank">Ngân hàng câu hỏi</option><option value="both">Cả hai</option></select></div>
     </div>
-    <div class="arena">
-      <div class="team L" id="teamL"><div class="tn" id="tugLName"></div><div class="pts" id="tugLPts"></div><div id="tugLBtns" style="display:grid;gap:8px"></div><div class="pts">Phím 1 2 3 4</div></div>
-      <div class="mid">
-        <div class="rope-wrap" id="ropeWrap">
-          <div class="goal" id="goalL" style="background:var(--L)"></div>
-          <div class="goal" id="goalR" style="background:var(--R)"></div>
-          <div class="mark" style="left:50%"></div>
-          <div class="rope" id="rope"><div class="knot"></div><span class="puller" style="left:2%">🧑‍🤝‍🧑</span><span class="puller" style="right:2%;transform:scaleX(-1)">🧑‍🤝‍🧑</span></div>
-        </div>
-        <div class="row" style="justify-content:center"><span class="tnum" id="tugT"></span></div>
-        <div class="timer" id="tugTimer"><i></i></div>
-        <div class="tugq" id="tugQ" style="margin-top:10px">Bấm “Bắt đầu” để chơi.<br><span class="mute small">Hai đội cùng nhìn câu hỏi, đội nào bấm đúng trước sẽ kéo dây về phía mình một bước. Bấm sai thì đội đó bị khoá ở câu này.</span></div>
-        <div class="tugopts" id="tugOpts"></div>
-        <div class="row" style="justify-content:center;margin-top:12px">
-          <button class="pri" id="btnTugStart" style="font-size:18px">▶ Bắt đầu</button>
-          <button id="btnTugNext">⏭ Câu khác</button>
-          <button id="btnTugReset">↺ Ván mới</button>
-        </div>
-      </div>
-      <div class="team R" id="teamR"><div class="tn" id="tugRName"></div><div class="pts" id="tugRPts"></div><div id="tugRBtns" style="display:grid;gap:8px"></div><div class="pts">Phím 7 8 9 0</div></div>
+    <div class="row" style="margin-top:18px;justify-content:center;gap:16px">
+      <button class="bigplay one" id="btnTugOne">▶ Chơi trên 1 màn hình</button>
+      <button class="bigplay two" id="btnTugTwo">📱 2 đội chơi trên điện thoại</button>
     </div>
+    <div class="mute small" style="text-align:center;margin-top:10px">1 màn hình: đội xanh bấm phím <b>Q W A S</b>, đội đỏ bấm <b>O P K L</b>, hoặc chạm thẳng vào đáp án trên bảng cảm ứng. · Điện thoại: mỗi đội quét mã QR của đội mình, máy chiếu hiện dây kéo. <span id="tugCount"></span></div>
   </div>
   <div class="grid2">
     <div class="card">
@@ -344,7 +383,23 @@ b) Phát biểu 2 | S
       <div class="fbar" id="tugFbar"></div>
       <textarea id="tugText" rows="16" spellcheck="false"></textarea>
     </div>
-    <div class="card"><div class="row"><h2 style="margin:0">Xem trước</h2><span class="mute small" id="tugCount" style="margin-left:auto"></span></div><div id="tugPrev" style="max-height:620px;overflow:auto"></div></div>
+    <div class="card"><div class="row"><h2 style="margin:0">Xem trước</h2><span class="mute small" id="tugCount2" style="margin-left:auto"></span></div><div id="tugPrev" style="max-height:620px;overflow:auto"></div></div>
+  </div>
+  <div class="tg" id="tugGame" hidden>
+    <div class="tgbar">
+      <button class="tgb" id="tgExit">← Thoát</button><button class="tgb" id="tgPause" title="Tạm dừng (phím cách)">⏸</button>
+      <div class="tgmid">
+        <span class="tgpill L"><i></i><b id="tgLName"></b><em id="tgLScore">0</em></span>
+        <span class="tgclock" id="tgClock">⏰ 1:00</span>
+        <span class="tgpill R"><em id="tgRScore">0</em><b id="tgRName"></b><i></i></span>
+      </div>
+      <button class="tgb" id="tgMute">🔊 Tắt âm</button><button class="tgb" id="tgFull">⛶ Toàn màn hình</button>
+    </div>
+    <div class="tgmain">
+      <div class="tgside L" id="tgSideL"></div>
+      <div class="tgfield" id="tgField"></div>
+      <div class="tgside R" id="tgSideR"></div>
+    </div>
   </div>
 </section>
 
@@ -371,7 +426,7 @@ function jget(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return 
 function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 async function copy(t){try{await navigator.clipboard.writeText(t);toast('✅ Đã chép')}catch(e){const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('✅ Đã chép')}catch(_){toast('Không chép được, hãy chọn và chép tay')}ta.remove()}}
 const fmtTime=t=>new Date(t).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
-let AC;function beep(f=880,d=.12,type='sine',v=.15){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+let AC,MUTE=false;function beep(f=880,d=.12,type='sine',v=.15){if(MUTE)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
 const ding=()=>{beep(784,.15);setTimeout(()=>beep(1175,.3),130)}, buzz=()=>beep(150,.35,'square',.08);
 function confetti(n=60){const em=['🎉','✨','🎊','⭐','💥','🌟'];for(let i=0;i<n;i++){const s=document.createElement('span');s.className='confetti';s.textContent=em[i%em.length];s.style.left=Math.random()*100+'vw';s.style.animationDuration=(1.8+Math.random()*2)+'s';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),4600)}}
 
@@ -517,7 +572,7 @@ D. NaCl
 = Áp suất trong chai giảm nên độ tan của khí CO2 giảm, CO2 thoát ra ngoài.`;
 function defaults(){return{students:[],groups:[],bank:SAMPLE,scores:{stu:{},grp:{}},room:'lhsn-'+rid(20),sheets:[],subs:{},grade:{},
   tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,src:'own',qs:TUG_SAMPLE},drag:[],dragRes:{},dragCur:'',
-  pick:{mode:'hs',norep:true,called:[],qtype:'all',qorder:'rand',sec:30,qi:0,grp:''}}}
+  pick:{style:'wheel',mode:'hs',norep:true,called:[],qtype:'all',qorder:'rand',sec:30,qi:0,grp:''}}}
 const OLD_MATH_Q=`[TN] Nghiệm của phương trình x^2 - 4 = 0 là
 A. x = 4
 *B. x = +-2
@@ -630,7 +685,7 @@ function teacherMain(){
 let selStu=null;
 function initLop(){
   const ta=$('#stuText');ta.value=S.students.join('\n');
-  const upd=()=>{S.students=ta.value.split('\n').map(x=>x.replace(/^\s*\d+[.)\t ]+/,'').replace(/\t.*/,'').trim()).filter(Boolean);$('#stuCount').textContent=S.students.length+' học sinh';save()};
+  const upd=()=>{S.students=ta.value.split('\n').map(x=>x.replace(/^\s*\d+[.)\t ]+/,'').replace(/\t.*/,'').trim()).filter(Boolean);$('#stuCount').textContent=S.students.length+' học sinh';save();typeof refreshWheel==='function'&&$('#wheel')&&refreshWheel()};
   ta.addEventListener('input',upd);upd();
   const split=rand=>{if(!S.students.length)return toast('Hãy dán danh sách học sinh trước');
     if(S.groups.some(g=>g.members.length)&&!confirm('Chia lại nhóm? Cách chia cũ sẽ mất.'))return;
@@ -694,7 +749,7 @@ function pickPool(){
   else pool=S.students.map(n=>({name:n,grp:groupOf(n)}));
   return pool;
 }
-function pickInfo(){const pool=pickPool(),left=pool.filter(p=>!S.pick.called.includes(p.name)).length;
+function pickInfo(noW){if(!noW)setTimeout(refreshWheel,0);const pool=pickPool(),left=pool.filter(p=>!S.pick.called.includes(p.name)).length;
   $('#pickInfo').textContent=pool.length?`Còn ${S.pick.norep?left:pool.length}/${pool.length} ${S.pick.mode==='nhom'?'nhóm':'em'} chưa gọi · Ngân hàng có ${BANK.length} câu`:'Chưa có danh sách — vào tab “Lớp & nhóm” để dán tên học sinh.'}
 function initPick(){
   const P=S.pick;$('#pickMode').value=P.mode;$('#pickNorep').checked=P.norep;$('#pickQType').value=P.qtype;$('#pickQOrder').value=P.qorder;$('#pickSec').value=P.sec;
@@ -706,6 +761,9 @@ function initPick(){
   $('#pickQOrder').onchange=e=>{P.qorder=e.target.value;P.qi=0;save()};
   $('#pickSec').onchange=e=>{P.sec=+e.target.value;save()};
   $('#btnPickReset').onclick=e=>{e.preventDefault();P.called=[];save();pickInfo();toast('Đã cho gọi lại từ đầu')};
+  $('#pickStyle').value=P.style||'wheel';const showW=()=>{$('#wheelWrap').style.display=P.style==='wheel'?'':'none'};showW();
+  $('#pickStyle').onchange=e=>{P.style=e.target.value;save();showW();refreshWheel()};
+  $('#wheelHub').onclick=doPick;
   $('#btnPick').onclick=doPick;$('#btnAsk').onclick=doAsk;
   $('#btnShowAns').onclick=()=>{if(pickQCur)showPickQ(true)};
   $('#pickScoreBtns').onclick=e=>{const b=e.target.closest('[data-pts]');if(!b||!pickCur)return;const p=+b.dataset.pts;
@@ -717,16 +775,42 @@ function initPick(){
   bt.addEventListener('input',()=>{if(document.activeElement!==pb)pb.value=bt.value});
   renderPickLog();pickInfo();
 }
+const WCOL=['#ef4444','#f59e0b','#22c55e','#0ea5e9','#6366f1','#ec4899','#14b8a6','#f97316','#84cc16','#8b5cf6','#06b6d4','#eab308'];
+let WROT=0,WNAMES=[],WSPIN=false;
+function shortName(n,count){const w=n.trim().split(/\s+/);return count>18&&w.length>1?w.slice(-1)[0]:count>10&&w.length>2?w.slice(-2).join(' '):n}
+function drawWheel(names,rot){const cv=$('#wheel');if(!cv)return;const ctx=cv.getContext('2d'),W=cv.width,c=W/2,R=c-14,n=names.length;ctx.clearRect(0,0,W,W);
+  ctx.beginPath();ctx.arc(c,c,R+10,0,7);ctx.fillStyle='#1d2433';ctx.fill();
+  if(!n){ctx.beginPath();ctx.arc(c,c,R,0,7);ctx.fillStyle='#e5e7eb';ctx.fill();return}
+  const a=2*Math.PI/n;
+  for(let i=0;i<n;i++){const st=rot+i*a-Math.PI/2;ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,R,st,st+a);ctx.closePath();
+    ctx.fillStyle=WCOL[(n%WCOL.length===1&&i===n-1)?2:i%WCOL.length];ctx.fill();ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=3;ctx.stroke();
+    ctx.save();ctx.translate(c,c);ctx.rotate(st+a/2);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+    const fs=Math.max(14,Math.min(44,Math.floor(a*R*0.55),Math.floor(560/Math.max(6,n))+12));ctx.font=`800 ${fs}px "Be Vietnam Pro",sans-serif`;
+    let t=shortName(names[i],n);const maxW=R*0.66;while(ctx.measureText(t).width>maxW&&t.length>3)t=t.slice(0,-2)+'…';
+    ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=4;ctx.fillText(t,R-22,0);ctx.restore()}
+  for(let i=0;i<Math.min(n*2,72);i++){const ang=i*2*Math.PI/Math.min(n*2,72);ctx.beginPath();ctx.arc(c+Math.cos(ang)*(R+5),c+Math.sin(ang)*(R+5),4,0,7);ctx.fillStyle=i%2?'#fde68a':'#fff';ctx.fill()}}
+function wheelSet(names){WNAMES=names;drawWheel(WNAMES,WROT)}
+function spinWheel(names,wi,done){WNAMES=names;const n=names.length,a=2*Math.PI/n;WSPIN=true;
+  const target=-(wi+0.5)*a+(Math.random()-.5)*a*0.6;let base=WROT%(2*Math.PI);const end=target-2*Math.PI*(6+Math.floor(Math.random()*2));
+  // quay theo chiều kim đồng hồ: góc tăng
+  const from=base,to=from+((target-from)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)+2*Math.PI*6;
+  const dur=5200,t0=performance.now();let lastSlice=-1;
+  const step=now=>{const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,4);WROT=from+(to-from)*e;drawWheel(names,WROT);
+    const sl=Math.floor(((-WROT%(2*Math.PI))+2*Math.PI)%(2*Math.PI)/a);if(sl!==lastSlice){lastSlice=sl;beep(1200,.025,'square',.04)}
+    if(t<1)requestAnimationFrame(step);else{WSPIN=false;done()}};requestAnimationFrame(step)}
+function pickCandidates(){const pool=pickPool();let cand=S.pick.norep?pool.filter(p=>!S.pick.called.includes(p.name)):pool;
+  if(!cand.length&&pool.length){toast('Đã gọi hết, bắt đầu vòng mới');S.pick.called=S.pick.called.filter(n=>!pool.some(p=>p.name===n));cand=pool}return cand}
+function refreshWheel(){if(S.pick.style!=='wheel'||WSPIN)return;const pool=pickPool();let c=S.pick.norep?pool.filter(p=>!S.pick.called.includes(p.name)):pool;if(!c.length)c=pool;wheelSet(c.map(p=>p.name))}
 function doPick(){
-  const pool=pickPool();if(!pool.length)return toast('Chưa có danh sách học sinh / nhóm');
-  let cand=S.pick.norep?pool.filter(p=>!S.pick.called.includes(p.name)):pool;
-  if(!cand.length){toast('Đã gọi hết, bắt đầu vòng mới');S.pick.called=S.pick.called.filter(n=>!pool.some(p=>p.name===n));cand=pool}
-  const win=cand[Math.floor(Math.random()*cand.length)];
+  if(WSPIN)return;const pool=pickPool();if(!pool.length)return toast('Chưa có danh sách học sinh / nhóm');
+  const cand=pickCandidates();const wi=Math.floor(Math.random()*cand.length),win=cand[wi];
   const box=$('#nameBox');box.classList.remove('done');$('#btnPick').disabled=true;$('#pickQ').innerHTML='';$('#pickScoreBtns').style.display='none';stopPickTimer();pickQCur=null;
+  const finish=()=>{box.firstElementChild.textContent=win.name;$('#nameSub').textContent=win.isGroup?'':(win.grp||'');box.classList.add('done');ding();confetti(30);
+    pickCur=win;if(S.pick.norep)S.pick.called.push(win.name);save();pickInfo(true);$('#btnPick').disabled=false;$('#pickWho').textContent=win.name;$('#pickScoreBtns').style.display='';logPick('Gọi: '+win.name)};
+  if(S.pick.style==='wheel'){box.firstElementChild.textContent='🎡 …';$('#nameSub').innerHTML='&nbsp;';spinWheel(cand.map(p=>p.name),wi,finish);return}
   let n=0,delay=45;const total=22;
   const step=()=>{const x=pool[Math.floor(Math.random()*pool.length)];box.firstElementChild.textContent=x.name;beep(500+n*20,.04,'triangle',.05);n++;
-    if(n<total){delay*=1.1;setTimeout(step,delay)}else{box.firstElementChild.textContent=win.name;$('#nameSub').textContent=win.isGroup?'':(win.grp||'');box.classList.add('done');ding();
-      pickCur=win;if(S.pick.norep)S.pick.called.push(win.name);save();pickInfo();$('#btnPick').disabled=false;$('#pickWho').textContent=win.name;$('#pickScoreBtns').style.display='';logPick('Gọi: '+win.name)}};
+    if(n<total){delay*=1.1;setTimeout(step,delay)}else finish()};
   step();
 }
 function doAsk(){
@@ -750,27 +834,9 @@ let PLOG=[];function logPick(t){PLOG.unshift(new Date().toLocaleTimeString('vi-V
 function renderPickLog(){$('#pickLog').innerHTML=PLOG.map(x=>`<li>${esc(x)}</li>`).join('')||'<li class="mute">Chưa có</li>'}
 
 /* ---------- KÉO CO ---------- */
-const TG={pos:0,q:null,lock:{L:false,R:false},running:false,timer:null,score:{L:0,R:0},used:[]};
-function initTug(){
-  const T=S.tug;$('#tugL').value=T.L;$('#tugR').value=T.R;$('#tugTarget').value=T.target;$('#tugSec').value=T.sec;$('#tugSrc').value=T.src;
-  $('#tugL').oninput=e=>{T.L=e.target.value;save();tugRender()};$('#tugR').oninput=e=>{T.R=e.target.value;save();tugRender()};
-  $('#tugTarget').onchange=e=>{T.target=Math.max(2,Math.min(10,+e.target.value||5));e.target.value=T.target;save();tugRender()};
-  $('#tugSec').onchange=e=>{T.sec=+e.target.value;save()};
-  $('#tugSrc').onchange=e=>{T.src=e.target.value;TG.used=[];save();$('#tugCount').textContent=tugPool().length+' lượt hỏi'};
-  const tt=$('#tugText');tt.value=T.qs;mountFbar($('#tugFbar'),tt);
-  const tprev=()=>{const qs=parseQs(T.qs).filter(q=>q.t==='TN'||q.t==='DS');$('#tugPrev').innerHTML=qs.map((q,i)=>qHTML(q,i)).join('')||'<div class="mute">Chưa có câu hỏi.</div>';$('#tugCount').textContent=tugPool().length+' lượt hỏi'};
-  let tpt;tt.addEventListener('input',()=>{T.qs=tt.value;TG.used=[];save();clearTimeout(tpt);tpt=setTimeout(tprev,250)});tprev();
-  $('#btnTugSample').onclick=()=>{if(tt.value.trim()&&!confirm('Thay câu hỏi hiện có bằng câu mẫu Hoá 8?'))return;tt.value=TUG_SAMPLE;tt.dispatchEvent(new Event('input'))};
-  $('#tugPickTeams').onchange=e=>{if(!e.target.value)return;const[i,j]=e.target.value.split(',').map(Number);T.L=S.groups[i].name;T.R=S.groups[j].name;$('#tugL').value=T.L;$('#tugR').value=T.R;save();tugRender();e.target.value=''};
-  $('#btnTugStart').onclick=()=>{if(Math.abs(TG.pos)>=S.tug.target)tugReset();TG.running=true;tugNext()};
-  $('#btnTugNext').onclick=()=>{if(TG.running)tugNext()};
-  $('#btnTugReset').onclick=tugReset;
-  ['L','R'].forEach(side=>$('#tug'+side+'Btns').addEventListener('click',e=>{const b=e.target.closest('button');if(b)tugAnswer(side,+b.dataset.k)}));
-  document.addEventListener('keydown',e=>{if(!$('#t-keoco').classList.contains('on')||!TG.running||e.target.matches('input,textarea,select'))return;
-    const L={'1':0,'2':1,'3':2,'4':3},R={'7':0,'8':1,'9':2,'0':3};
-    if(e.key in L)tugAnswer('L',L[e.key]);else if(e.key in R)tugAnswer('R',R[e.key]);else if(e.key===' '&&!TG.q){e.preventDefault();tugNext()}});
-  tugRender();
-}
+const TG={pos:0,run:false,paused:false,left:0,timer:null,q:{L:null,R:null},busy:{L:false,R:false},score:{L:0,R:0},used:[],mode:'one',dev:{},g:'',es:null,topic:'',links:{}};
+const TKEYS={L:['q','w','a','s'],R:['o','p','k','l']};
+const G_DIST=110; // khoảng cách từ giữa tới vạch thắng (đơn vị SVG)
 function tugPool(){const pool=[],src=S.tug.src||'own',add=(list,pre)=>list.forEach((q,i)=>{if(q.t==='TN'&&q.ans>=0)pool.push({id:pre+i,q:q.q,opts:q.opts,ans:q.ans});if(q.t==='DS')q.items.forEach((it,k)=>{if(q.ia[k]!=null)pool.push({id:pre+i+'_'+k,q:(q.q?q.q+'\n':'')+it,opts:['Đúng','Sai'],ans:q.ia[k]?0:1})})});
   if(src!=='bank')add(parseQs(S.tug.qs||''),'k');if(src!=='own')add(BANK,'b');return pool}
 function tugQuestion(){
@@ -779,30 +845,175 @@ function tugQuestion(){
   const x=fresh[Math.floor(Math.random()*fresh.length)];TG.used.push(x.id);
   const order=x.opts.length===2?[0,1]:shuffle(x.opts.map((_,i)=>i));return{q:x.q,opts:order.map(i=>x.opts[i]),ans:order.indexOf(x.ans)};
 }
-function tugNext(){clearInterval(TG.timer);const qq=TG.q=tugQuestion();if(!qq){TG.running=false;tugRender();$('#tugQ').innerHTML='Chưa có câu hỏi — thầy cô nhập câu hỏi ở khung “✏️ Thầy cô nhập câu hỏi cho Kéo co” bên dưới.';return}TG.lock={L:false,R:false};TG.answered=null;tugRender();
-  const sec=S.tug.sec,end=Date.now()+sec*1000;TG.t0=Date.now();
-  TG.timer=setInterval(()=>{const left=Math.max(0,end-Date.now());$('#tugT').textContent=Math.ceil(left/1000)+'s';$('#tugTimer i').style.width=(left/sec/10)+'%';$('#tugTimer').classList.toggle('low',left<4000);
-    if(!left){clearInterval(TG.timer);buzz();tugReveal(null);$('#tugT').textContent='⏰ Hết giờ — không đội nào kéo được';setTimeout(()=>{if(TG.running&&TG.q===qq)tugNext()},2200)}},150)}
-function tugAnswer(side,k){const q=TG.q;if(!q||TG.answered!=null||TG.lock[side]||k>=q.opts.length)return;
-  if(k===q.ans){TG.answered=side;clearInterval(TG.timer);const secs=((Date.now()-TG.t0)/1000).toFixed(1);TG.pos+=side==='L'?-1:1;TG.score[side]++;ding();tugRope();
-    $('#tugT').textContent=`💪 ${side==='L'?S.tug.L:S.tug.R} đúng sau ${secs} giây!`;tugReveal(side,k);$('#rope').classList.add('shake');setTimeout(()=>$('#rope').classList.remove('shake'),500);
-    if(Math.abs(TG.pos)>=S.tug.target){TG.running=false;setTimeout(()=>{$('#tugQ').innerHTML=`<div class="banner">🏆 ${esc(side==='L'?S.tug.L:S.tug.R)} thắng!</div>`;$('#tugOpts').innerHTML='';confetti(90);ding()},700)}
-    else setTimeout(()=>{if(TG.running)tugNext()},1800)}
-  else{TG.lock[side]=true;buzz();const b=$(`#tug${side}Btns button[data-k="${k}"]`);b&&b.classList.add('no');$('#team'+side).classList.add('locked');
-    if(TG.lock.L&&TG.lock.R){clearInterval(TG.timer);tugReveal(null);$('#tugT').textContent='Cả hai đội đều sai!';setTimeout(()=>{if(TG.running)tugNext()},2200)}}}
-function tugReveal(side,k){TG.answered=TG.answered||'x';$$('#tugOpts div').forEach((d,i)=>{if(i===TG.q.ans){d.style.background='var(--okbg)';d.style.color='var(--ok)'}});if(side){const b=$(`#tug${side}Btns button[data-k="${k}"]`);b&&b.classList.add('yes')}}
-function tugReset(){clearInterval(TG.timer);TG.pos=0;TG.q=null;TG.running=false;TG.score={L:0,R:0};TG.used=[];$('#tugT').textContent='';$('#tugQ').innerHTML='Bấm “Bắt đầu” để chơi.';$('#tugOpts').innerHTML='';tugRender()}
-function tugRope(){const T=S.tug;$('#tugLPts').textContent=TG.score.L+' câu đúng';$('#tugRPts').textContent=TG.score.R+' câu đúng';const w=$('#ropeWrap').clientWidth||600;$('#rope').style.transform=`translateX(${TG.pos*w*0.38/T.target}px)`}
-function tugRender(){const T=S.tug;tugRope();$('#tugLName').textContent=T.L||'Đội trái';$('#tugRName').textContent=T.R||'Đội phải';$('#tugLPts').textContent=TG.score.L+' câu đúng';$('#tugRPts').textContent=TG.score.R+' câu đúng';
-  const w=$('#ropeWrap').clientWidth||600,stepPx=w*0.38/T.target;$('#rope').style.transform=`translateX(${TG.pos*stepPx}px)`;
-  $('#goalL').style.left=(50-38)+'%';$('#goalR').style.left=(50+38)+'%';
-  $('#teamL').classList.remove('locked');$('#teamR').classList.remove('locked');
-  const q=TG.q;
-  if(q){$('#tugQ').innerHTML=fm(q.q);$('#tugOpts').innerHTML=q.opts.map((o,i)=>`<div><b>${String.fromCharCode(65+i)}.</b> ${fm(o)}</div>`).join('');
-    ['L','R'].forEach(s=>$('#tug'+s+'Btns').innerHTML=q.opts.map((o,i)=>`<button data-k="${i}"><b>${String.fromCharCode(65+i)}</b> · ${fm(o).slice(0,400)}</button>`).join(''))}
-  else ['L','R'].forEach(s=>$('#tug'+s+'Btns').innerHTML='');
+
+function kidSVG(x,shirt,pant,girl,hair){
+  return `<g transform="translate(${x},0)"><g class="kid">
+    <path d="M22 328 L58 388" stroke="${pant}" stroke-width="13" stroke-linecap="round"/>
+    <path d="M20 330 L4 360 L18 390" stroke="${pant}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <ellipse cx="64" cy="393" rx="12" ry="6" fill="#2b2b2b"/><ellipse cx="22" cy="394" rx="12" ry="6" fill="#2b2b2b"/>
+    ${girl?`<path d="M6 312 L40 316 L46 344 L-4 342Z" fill="${pant}"/>`:''}
+    <rect x="-13" y="-32" width="27" height="62" rx="11" fill="${shirt}" transform="translate(14,305) rotate(-20)"/>
+    <path d="M6 284 L60 298" stroke="${shirt}" stroke-width="10" stroke-linecap="round"/>
+    <path d="M10 292 L52 304" stroke="${shirt}" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="62" cy="299" r="6" fill="#f6c9a0"/><circle cx="54" cy="304" r="6" fill="#f6c9a0"/>
+    <path d="M-2 279 L16 282 L8 298Z" fill="#e11d1d"/>
+    <circle cx="-4" cy="256" r="18" fill="#f6c9a0"/>
+    <path d="M-22 254 A18 18 0 0 1 14 248 L8 244 Q-4 234 -16 242Z" fill="${hair}"/>
+    ${girl?`<circle cx="-24" cy="246" r="7" fill="${hair}"/>`:''}
+    <circle cx="4" cy="255" r="2.2" fill="#222"/><path d="M2 264 Q7 266 10 262" stroke="#a33" stroke-width="2" fill="none"/>
+  </g></g>`;
 }
-window.addEventListener('resize',()=>{if($('#t-keoco').classList.contains('on'))tugRender()});
+function tugFieldSVG(){
+  const c=300,b='#2f5bd3',r='#d42a2a',kidsL=[[40,0],[115,1],[190,0]];
+  const team=(sh,pa)=>kidsL.map(([x,g],i)=>kidSVG(x,sh,g?sh:pa,g,'#2a1a10')).join('');
+  return `<svg viewBox="-90 120 780 360" preserveAspectRatio="xMidYMid meet">
+    <line x1="${c}" y1="130" x2="${c}" y2="470" stroke="#22c55e" stroke-width="4" stroke-dasharray="10 8"/>
+    <line x1="${c-G_DIST}" y1="150" x2="${c-G_DIST}" y2="450" stroke="${b}" stroke-opacity=".45" stroke-width="3" stroke-dasharray="8 8"/>
+    <line x1="${c+G_DIST}" y1="150" x2="${c+G_DIST}" y2="450" stroke="${r}" stroke-opacity=".45" stroke-width="3" stroke-dasharray="8 8"/>
+    <g id="tgRope">
+      <line x1="60" y1="301" x2="540" y2="301" stroke="#3b2a1c" stroke-width="6" stroke-linecap="round"/>
+      <g class="pullL">${team('#2d5fc4','#24489a')}</g>
+      <g class="pullR" transform="translate(600,0) scale(-1,1)">${team('#c62828','#9e1c1c')}</g>
+      <g transform="translate(${c},301)"><path d="M0 0 L-20 -14 L-20 14Z M0 0 L20 -14 L20 14Z" fill="#e11d1d"/><path d="M0 0 L-8 30 M0 0 L8 30" stroke="#e11d1d" stroke-width="5"/><circle r="6" fill="#b91c1c"/></g>
+    </g></svg>`;
+}
+function initTug(){
+  const T=S.tug;$('#tugL').value=T.L;$('#tugR').value=T.R;$('#tugTarget').value=T.target;$('#tugSec').value=[60,90,120,180,300].includes(+T.sec)?T.sec:60;T.sec=+$('#tugSec').value;$('#tugSrc').value=T.src;
+  $('#tugL').oninput=e=>{T.L=e.target.value;save()};$('#tugR').oninput=e=>{T.R=e.target.value;save()};
+  $('#tugTarget').onchange=e=>{T.target=Math.max(2,Math.min(15,+e.target.value||5));e.target.value=T.target;save()};
+  $('#tugSec').onchange=e=>{T.sec=+e.target.value;save()};
+  const cnt=()=>{const n=tugPool().length;$('#tugCount').textContent=`(Đang có ${n} câu hỏi.)`;$('#tugCount2').textContent=n+' lượt hỏi'};
+  $('#tugSrc').onchange=e=>{T.src=e.target.value;save();cnt()};
+  $('#tugPickTeams').onchange=e=>{if(!e.target.value)return;const[i,j]=e.target.value.split(',').map(Number);T.L=S.groups[i].name;T.R=S.groups[j].name;$('#tugL').value=T.L;$('#tugR').value=T.R;save();e.target.value=''};
+  const tt=$('#tugText');tt.value=T.qs;mountFbar($('#tugFbar'),tt);
+  const tprev=()=>{const qs=parseQs(T.qs).filter(q=>q.t==='TN'||q.t==='DS');$('#tugPrev').innerHTML=qs.map((q,i)=>qHTML(q,i)).join('')||'<div class="mute">Chưa có câu hỏi.</div>';cnt()};
+  let tpt;tt.addEventListener('input',()=>{T.qs=tt.value;save();clearTimeout(tpt);tpt=setTimeout(tprev,250)});tprev();
+  $('#btnTugSample').onclick=()=>{if(tt.value.trim()&&!confirm('Thay câu hỏi hiện có bằng câu mẫu Hoá 8?'))return;tt.value=TUG_SAMPLE;tt.dispatchEvent(new Event('input'))};
+  $('#btnTugOne').onclick=()=>tugOpen('one');$('#btnTugTwo').onclick=()=>tugOpen('two');
+  $('#tgExit').onclick=tugClose;
+  $('#tgPause').onclick=tugPause;
+  $('#tgMute').onclick=()=>{MUTE=!MUTE;$('#tgMute').textContent=MUTE?'🔇 Bật âm':'🔊 Tắt âm'};
+  $('#tgFull').onclick=()=>document.fullscreenElement?document.exitFullscreen():$('#tugGame').requestFullscreen().catch(()=>{});
+  ['L','R'].forEach(s=>$('#tgSide'+s).addEventListener('click',e=>{const b=e.target.closest('.tgopt');if(b)tugAnswer(s,+b.dataset.k);const a=e.target.closest('[data-tg]');if(a)tugAct(a.dataset.tg,s)}));
+  $('#tgField').addEventListener('click',e=>{const a=e.target.closest('[data-tg]');if(a)tugAct(a.dataset.tg)});
+  document.addEventListener('keydown',e=>{if($('#tugGame').hidden||e.target.matches('input,textarea,select'))return;const k=e.key.toLowerCase();
+    if(k===' '){e.preventDefault();if(TG.run)tugPause();return}
+    if(TG.mode!=='one')return;
+    for(const s of ['L','R']){const i=TKEYS[s].indexOf(k);if(i>=0){tugAnswer(s,i);return}}});
+}
+function tugRender(){}
+function tugOpen(mode){
+  if(!tugPool().length)return toast('Chưa có câu hỏi — nhập câu hỏi ở khung bên dưới');
+  TG.mode=mode;$('#tugGame').hidden=false;document.body.style.overflow='hidden';
+  $('#tgLName').textContent=S.tug.L||'Đội Xanh';$('#tgRName').textContent=S.tug.R||'Đội Đỏ';
+  $('#tgField').innerHTML=tugFieldSVG()+'<div class="tgcover" id="tgCover"></div>';
+  $('#tugGame').requestFullscreen?.().catch(()=>{});
+  TG.run=false;TG.pos=0;TG.score={L:0,R:0};TG.left=S.tug.sec*1000;tugScore();tugRope();tugClockShow();
+  if(mode==='one'){tugCover(`<div class="tgbig">Sẵn sàng?</div><div>🔵 ${esc(S.tug.L)}: phím Q W A S &nbsp;·&nbsp; 🔴 ${esc(S.tug.R)}: phím O P K L</div><button class="bigplay one" data-tg="start">▶ Bắt đầu</button>`);
+    ['L','R'].forEach(s=>$('#tgSide'+s).innerHTML=`<div class="tgq">${esc(s==='L'?S.tug.L:S.tug.R)}</div><div class="tgopts"></div>`)}
+  else tugPhoneSetup();
+}
+function tugClose(){tugStop();if(TG.es){TG.es.close();TG.es=null}$('#tugGame').hidden=true;document.body.style.overflow='';if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
+function tugCover(html){const c=$('#tgCover');if(!c)return;c.innerHTML=html;c.hidden=!html}
+function tugAct(a,s){if(a==='start')tugStart();if(a==='again')tugOpen(TG.mode);if(a==='exit')tugClose();if(a==='resume')tugPause();
+  if(a==='award'){const w=TG.winner;const n=w==='L'?S.tug.L:S.tug.R;if(S.groups.some(g=>g.name===n))addScore(null,n,3);else addScore(null,n,3);toast('Đã cộng 3 điểm thi đua cho '+n);$('[data-tg="award"]').disabled=true}
+  if(a==='copy'&&s)copy(`${s==='L'?'🔵':'🔴'} Kéo co – ${s==='L'?S.tug.L:S.tug.R}\n👉 Mở link để chơi:\n${TG.links[s]}`)}
+function tugStart(){
+  TG.run=true;TG.paused=false;TG.pos=0;TG.score={L:0,R:0};TG.used=[];TG.left=S.tug.sec*1000;TG.winner=null;tugScore();tugRope();tugCover('');
+  if(TG.mode==='one'){tugNextQ('L');tugNextQ('R')}
+  else{TG.g=rid(6);TG.dev={};tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target});['L','R'].forEach(s=>tugPhoneSide(s))}
+  beep(523,.12);setTimeout(()=>beep(784,.2),140);
+  let last=Date.now();clearInterval(TG.timer);
+  TG.timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(TG.paused||!TG.run)return;const before=Math.ceil(TG.left/1000);TG.left=Math.max(0,TG.left-dt);tugClockShow();
+    const sec=Math.ceil(TG.left/1000);if(sec!==before&&sec<=10&&sec>0)beep(700,.06);
+    if(!TG.left)tugFinish(TG.pos<0?'L':TG.pos>0?'R':null,true)},200);
+}
+function tugStop(){TG.run=false;clearInterval(TG.timer)}
+function tugPause(){if(!TG.run)return;TG.paused=!TG.paused;$('#tgPause').textContent=TG.paused?'▶':'⏸';
+  tugCover(TG.paused?`<div class="tgbig">⏸ Tạm dừng</div><button class="bigplay one" data-tg="resume">▶ Chơi tiếp</button>`:'');
+  if(TG.mode==='two')tugSend({e:TG.paused?'pause':'resume',g:TG.g,ms:TG.left})}
+function tugClockShow(){const s=Math.ceil(TG.left/1000);$('#tgClock').textContent='⏰ '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0');$('#tgClock').classList.toggle('low',TG.run&&s<=10)}
+function tugScore(){$('#tgLScore').textContent=TG.score.L;$('#tgRScore').textContent=TG.score.R}
+function tugRope(){const r=$('#tgRope');if(r)r.style.transform=`translateX(${TG.pos*G_DIST/S.tug.target}px)`}
+function qFont(t){const n=String(t).length;return n<35?'clamp(26px,3.6vw,64px)':n<70?'clamp(22px,2.9vw,48px)':n<130?'clamp(18px,2.2vw,36px)':'clamp(15px,1.6vw,26px)'}
+function tugNextQ(s){const q=TG.q[s]=tugQuestion();TG.busy[s]=false;
+  $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${qFont(q.q)}">${fm(q.q)}</div><div class="tgopts ${q.opts.length<=2?'two':''}">${q.opts.map((o,i)=>`<button class="tgopt" data-k="${i}" style="font-size:${qFont(o).replace('64px','44px')}"><kbd>${TKEYS[s][i]?.toUpperCase()||''}</kbd>${fm(o)}</button>`).join('')}</div>`}
+function tugAnswer(s,k){if(TG.mode!=='one'||!TG.run||TG.paused||TG.busy[s])return;const q=TG.q[s];if(!q||k>=q.opts.length)return;TG.busy[s]=true;
+  const btns=$$('#tgSide'+s+' .tgopt');
+  if(k===q.ans){btns[k].classList.add('ok');ding();tugPull(s,1);setTimeout(()=>{if(TG.run)tugNextQ(s)},650)}
+  else{btns[k].classList.add('no');btns[q.ans].classList.add('ok');buzz();setTimeout(()=>{if(TG.run)tugNextQ(s)},1400)}}
+function tugPull(s,n){TG.score[s]+=n;TG.pos+=s==='L'?-n:n;tugScore();tugRope();
+  const f=$('#tgField');f.classList.remove('yank'+s);void f.offsetWidth;f.classList.add('yank'+s);
+  if(Math.abs(TG.pos)>=S.tug.target)tugFinish(s,false)}
+function tugFinish(w,timeUp){if(!TG.run)return;tugStop();TG.winner=w;
+  if(TG.mode==='two')tugSend({e:'end',g:TG.g,w});
+  const name=w==='L'?S.tug.L:w==='R'?S.tug.R:'';
+  tugCover(`<div class="tgsmall">${timeUp?'⏰ Hết giờ!':'🎯 Kéo qua vạch!'}</div><div class="tgbig">${w?`🏆 ${esc(name)} thắng!`:'🤝 Hai đội hoà!'}</div>
+    <div>🔵 ${esc(S.tug.L)}: ${TG.score.L} câu đúng &nbsp;·&nbsp; 🔴 ${esc(S.tug.R)}: ${TG.score.R} câu đúng</div>
+    <div class="row" style="justify-content:center"><button class="bigplay one" data-tg="again">↺ Chơi lại</button>${w?'<button class="tgb" data-tg="award">＋3 điểm thi đua</button>':''}<button class="tgb" data-tg="exit">← Thoát</button></div>`);
+  if(w){confetti(90);ding();setTimeout(ding,350)}else beep(440,.3)}
+
+/* ----- Kéo co: 2 đội chơi trên điện thoại (qua ntfy.sh) ----- */
+async function tugSend(o){try{await fetch(RELAY+TG.topic,{method:'POST',body:'TUG|'+JSON.stringify(o)})}catch(e){}}
+async function tugPhoneSetup(){
+  TG.topic='lhsn-tug-'+rid(16);TG.dev={};TG.g='';
+  const pool=tugPool().map(x=>({q:x.q,o:x.opts,a:x.ans}));
+  for(const s of ['L','R'])TG.links[s]=location.origin+location.pathname+'#t='+await pack({v:1,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L,p:pool});
+  ['L','R'].forEach(s=>{const el=$('#tgSide'+s);el.innerHTML=`<div class="tgq" style="font-size:clamp(20px,2.4vw,36px);flex:0 0 auto">📱 ${esc(s==='L'?S.tug.L:S.tug.R)} quét mã</div>
+    <div class="tgqr"><div data-qr></div></div><div class="tgjoin" data-join>Chưa có máy nào vào</div><button class="tgb" data-tg="copy">📋 Chép link gửi Zalo cho đội</button>`;
+    const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:240,height:240,correctLevel:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
+  tugCover(`<div class="tgbig">Hai đội quét mã QR</div><div>Mỗi đội dùng điện thoại quét mã ở phía đội mình (nhiều máy cùng đội cũng được). Khi các máy đã vào, bấm Bắt đầu.</div><button class="bigplay two" data-tg="start">▶ Bắt đầu</button>`);
+  if(TG.es)TG.es.close();
+  TG.es=new EventSource(RELAY+TG.topic+'/sse');
+  TG.es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}tugPhoneMsg(d)};
+}
+function tugPhoneMsg(d){
+  if(d.e!=='st'||!d.id||!(d.s==='L'||d.s==='R'))return;
+  let dev=TG.dev[d.id];const isNew=!dev;if(!dev)dev=TG.dev[d.id]={s:d.s,ok:0,g:''};
+  if(TG.run&&d.g!==TG.g){if(isNew||dev.g!==TG.g){dev.g='';tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target})}tugJoined();return}
+  if(TG.run&&d.g===TG.g){if(dev.g!==TG.g){dev.g=TG.g;dev.ok=0}const delta=(+d.ok||0)-dev.ok;dev.ok=+d.ok||0;dev.q=d.q;
+    if(delta>0){ding();tugPull(d.s,delta)}tugPhoneSide(d.s,d.q)}
+  tugJoined()}
+function tugJoined(){['L','R'].forEach(s=>{const n=Object.values(TG.dev).filter(v=>v.s===s).length;const el=$('#tgSide'+s+' [data-join]');if(el)el.textContent=n?`✅ ${n} máy đã vào`:'Chưa có máy nào vào'})}
+function tugPhoneSide(s,qi){if(TG.mode!=='two')return;const P=tugPool();const q=qi!=null?P[qi]:null;
+  $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${q?qFont(q.q):'clamp(22px,2.6vw,40px)'}">${q?fm(q.q):'📱 Đội đang trả lời trên điện thoại…'}</div>
+   <div class="tgopts ${q&&q.opts.length<=2?'two':''}">${q?q.opts.map(o=>`<div class="tgopt" style="font-size:${qFont(o).replace('64px','44px')}">${fm(o)}</div>`).join(''):''}</div><div class="tgjoin" data-join></div>`;tugJoined()}
+
+/* ----- Màn hình điện thoại của đội (#t=...) ----- */
+async function tugPhone(){
+  document.body.classList.add('student');const app=$('#student');let P;
+  try{P=await unpack(location.hash.slice(3))}catch(e){app.innerHTML='<div class="card"><h2>Link bị hỏng</h2><p>Hãy quét lại mã QR trên máy chiếu.</p></div>';return}
+  const L=P.s==='L',col=L?'#2563eb':'#dc2626';document.title='Kéo co – '+P.n;
+  const id=rid(8);let g='',ok=0,no=0,q=null,qi=null,left=0,run=false,paused=false,timer=null,used=[],busy=false;
+  app.innerHTML=`<div class="tph" style="background:${col}"><div style="font-size:14px;opacity:.85">💪 Kéo co · đội ${L?'🔵 trái':'🔴 phải'}</div><div style="font-size:26px;font-weight:800">${esc(P.n)}</div>
+    <div class="row" style="justify-content:center;gap:18px;margin-top:4px"><span class="tpclock" id="tpClock">⏰ --:--</span><span>✅ <b id="tpOk">0</b> câu đúng</span></div></div>
+    <div id="tpBody"><div class="dstart">⏳ Chờ thầy cô bấm <b>Bắt đầu</b> trên máy chiếu…<div class="small" id="tpNet" style="margin-top:8px">Đang kết nối…</div></div></div>`;
+  let sending=false,dirty=false;
+  async function push(){if(sending){dirty=true;return}sending=true;dirty=false;
+    try{const r=await fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi})});if(!r.ok)dirty=true}catch(e){dirty=true}
+    sending=false;if(dirty)setTimeout(push,r429())}
+  const r429=()=>800;
+  function nextQ(){const fresh=P.p.map((_,i)=>i).filter(i=>!used.includes(i));let c=fresh.length?fresh:P.p.map((_,i)=>i);if(!fresh.length)used=[];
+    qi=c[Math.floor(Math.random()*c.length)];used.push(qi);q=P.p[qi];busy=false;
+    const order=q.o.length===2?[0,1]:shuffle(q.o.map((_,i)=>i));q._ord=order;
+    $('#tpBody').innerHTML=`<div class="tpq">${fm(q.q)}</div><div class="tpopts">${order.map((oi,k)=>`<button class="tpopt" data-k="${oi}" style="border-color:${col}">${fm(q.o[oi])}</button>`).join('')}</div>`;push()}
+  function tick(){$('#tpClock').textContent='⏰ '+Math.floor(Math.ceil(left/1000)/60)+':'+String(Math.ceil(left/1000)%60).padStart(2,'0')}
+  function start(d){g=d.g;ok=0;no=0;used=[];left=d.ms;run=true;paused=false;$('#tpOk').textContent=0;clearInterval(timer);let last=Date.now();
+    timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(!run||paused)return;left=Math.max(0,left-dt);tick();if(!left){run=false;clearInterval(timer)}},250);tick();beep(784,.15);nextQ()}
+  $('#tpBody').addEventListener('click',e=>{const b=e.target.closest('.tpopt');if(!b||!run||paused||busy)return;busy=true;const k=+b.dataset.k;
+    if(k===q.a){b.classList.add('ok');ok++;$('#tpOk').textContent=ok;beep(988,.1);if(navigator.vibrate)navigator.vibrate(40);setTimeout(()=>{if(run)nextQ()},450)}
+    else{no++;b.classList.add('no');$$('#tpBody .tpopt').forEach(x=>{if(+x.dataset.k===q.a)x.classList.add('ok')});buzz();if(navigator.vibrate)navigator.vibrate([60,40,60]);setTimeout(()=>{if(run)nextQ()},1300)}
+    push()});
+  const es=new EventSource(RELAY+P.r+'/sse');
+  es.onopen=()=>{const n=$('#tpNet');if(n)n.textContent='🟢 Đã kết nối với máy chiếu';push()};
+  es.onerror=()=>{const n=$('#tpNet');if(n)n.textContent='🟠 Mất kết nối, đang thử lại…'};
+  es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}
+    if(d.e==='start'&&d.g!==g)start(d);
+    if(d.e==='pause'&&d.g===g){paused=true;left=d.ms;tick();$('#tpBody').insertAdjacentHTML('afterbegin','<div class="note" id="tpPause">⏸ Thầy cô đang tạm dừng</div>')}
+    if(d.e==='resume'&&d.g===g){paused=false;left=d.ms;$('#tpPause')?.remove()}
+    if(d.e==='end'&&d.g===g){run=false;clearInterval(timer);const win=d.w===P.s;
+      $('#tpBody').innerHTML=`<div class="tpq" style="font-size:30px">${d.w?(win?'🏆 Đội em thắng!':'😅 Đội '+esc(P.o)+' thắng'):'🤝 Hai đội hoà!'}</div><div class="dstart">Đội em trả lời đúng ${ok} câu.<br>Chờ thầy cô bắt đầu ván mới…</div>`;if(win){confetti(60);ding()}}};
+}
 
 /* ---------- PHIẾU THẢO LUẬN / BÀI TẬP ---------- */
 const KIND={thaoluan:{label:'phiếu thảo luận',title:'💬 Tạo phiếu học tập cho nhóm',by:'nhom'},baitap:{label:'bài tập',title:'📝 Giao bài tập',by:'canhan'}};
@@ -1201,7 +1412,8 @@ async function dragStudent(){
 
 /* ============ KHỞI ĐỘNG ============ */
 document.addEventListener('DOMContentLoaded',()=>{
-  if(location.hash.startsWith('#p='))studentMain();else if(location.hash.startsWith('#g='))dragStudent();else teacherMain();
+  if(location.hash.startsWith('#p='))studentMain();else if(location.hash.startsWith('#g='))dragStudent();else if(location.hash.startsWith('#t='))tugPhone();else teacherMain();
+  window.addEventListener('hashchange',()=>{if(/^#[pgt]=/.test(location.hash))location.reload()});
 });
 </script>
 </body>
