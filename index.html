@@ -213,6 +213,16 @@ body.student #student{display:block}
 .wheelptr{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-top:34px solid #e11d48;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35));z-index:2}
 .wheelhub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:23%;aspect-ratio:1;border-radius:50%;background:#fff;border:5px solid #1d2433;font-weight:800;font-size:clamp(13px,1.6vw,20px);color:#1d2433;box-shadow:0 4px 14px rgba(0,0,0,.3);padding:0}
 .wheelhub:hover{background:#fef3c7}
+.clsb{border:2px solid var(--line);border-radius:12px;padding:6px 12px;text-align:left;background:var(--card)}
+.clsb b{display:block;font-size:17px}.clsb span{font-size:12px;color:var(--mute);font-weight:600}
+.clsb.on{border-color:var(--pri);background:color-mix(in srgb,var(--pri) 12%,var(--card))}
+.imgslot{flex:1 1 200px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--card);display:flex;flex-direction:column;gap:6px;cursor:pointer}
+.imgslot.music{cursor:default;flex:1 1 230px}
+.imgslot>span{font-size:12px;color:var(--mute)}
+.imgbox{position:relative;height:110px;border:2px dashed var(--line);border-radius:12px;background:var(--soft) center/contain no-repeat;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:28px}
+.imgbox:empty::after{content:"🖼️"}
+.imgbox .rm{position:absolute;top:4px;right:4px;padding:1px 8px;font-size:13px}
+.kidimg{animation:heaveL .7s ease-in-out infinite alternate}
 .done{background:var(--okbg);color:var(--ok);border-radius:12px;padding:12px;font-weight:600;margin:12px 0}
 </style>
 </head>
@@ -220,6 +230,7 @@ body.student #student{display:block}
 <header class="top">
   <div class="topin">
     <div class="brand">🏫 Lớp Học <span>Sôi Nổi</span></div>
+    <select id="clsTop" title="Lớp đang dạy" style="width:auto;max-width:170px;font-weight:700"></select>
     <span id="netStatus" class="status">⚪ Chưa nhận bài</span>
     <button class="sm ghost" id="btnFull" title="Toàn màn hình cho máy chiếu">⛶ Toàn màn hình</button>
   </div>
@@ -237,10 +248,16 @@ body.student #student{display:block}
 <main id="teacher">
 <!-- ===== LỚP ===== -->
 <section class="tab on" id="t-lop">
+  <div class="card">
+    <div class="row"><h2 style="margin:0">🏫 Các lớp thầy cô dạy</h2><span class="mute small" id="clsCount"></span><span style="margin-left:auto"></span>
+      <button class="pri" id="btnClsImport">📥 Nhập danh sách lớp (Excel hoặc dán)</button><button id="btnClsAdd">＋ Thêm lớp</button><button id="btnClsSplitAll">🎲 Chia nhóm tất cả các lớp</button></div>
+    <div class="mute small" style="margin-top:4px">Bấm vào tên lớp để chọn lớp đang dạy. Gọi tên, Kéo co, Kéo thả, phiếu thảo luận đều dùng danh sách và nhóm của lớp đang chọn. Mỗi lớp có bảng điểm thi đua riêng.</div>
+    <div id="clsList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+  </div>
   <div class="grid2">
     <div>
       <div class="card">
-        <h2>Danh sách học sinh</h2>
+        <div class="row"><h2 style="margin:0">Danh sách học sinh lớp <span id="clsName" style="color:var(--pri)"></span></h2><span style="margin-left:auto"></span><button class="sm" id="btnClsRename">✎ Đổi tên lớp</button><button class="sm ghost" id="btnClsDel">🗑 Xoá lớp</button></div>
         <div class="mute small">Dán tên học sinh, mỗi dòng một em (chép thẳng cột họ tên từ Excel cũng được).</div>
         <textarea id="stuText" rows="9" placeholder="Nguyễn Văn An&#10;Trần Thị Bình&#10;..."></textarea>
         <div class="row" style="margin-top:8px">
@@ -370,6 +387,17 @@ b) Phát biểu 2 | S
       <div style="width:120px"><label>Số bước thắng</label><input id="tugTarget" type="number" min="2" max="15"></div>
       <div style="width:250px"><label>Lấy câu hỏi</label><select id="tugSrc"><option value="own">Câu hỏi kéo co (khung bên dưới)</option><option value="bank">Ngân hàng câu hỏi</option><option value="both">Cả hai</option></select></div>
     </div>
+    <div class="row" style="margin-top:14px;align-items:stretch;gap:12px">
+      <div class="imgslot" data-slot="both"><b>Hình 2 đội (cả dây)</b><div class="imgbox"></div><span>Chạm để chọn ảnh</span></div>
+      <div class="imgslot" data-slot="L"><b>Hình Đội Xanh</b><div class="imgbox"></div><span>Chạm để chọn ảnh</span></div>
+      <div class="imgslot" data-slot="R"><b>Hình Đội Đỏ</b><div class="imgbox"></div><span>Chạm để chọn ảnh</span></div>
+      <div class="imgslot music"><b>🎵 Nhạc nền</b>
+        <label class="row" style="margin:4px 0;color:var(--ink)"><input type="checkbox" id="tugMusicOn" style="width:auto"> Bật nhạc khi chơi</label>
+        <div class="small mute" id="musicName">Nhạc vui có sẵn</div>
+        <div class="row" style="gap:6px;margin-top:6px"><button class="sm" id="btnMusicTest">▶ Nghe thử</button><button class="sm" id="btnMusicPick">📂 Chọn file nhạc</button><button class="sm ghost" id="btnMusicDef" title="Bỏ file nhạc, dùng nhạc có sẵn">↺</button></div></div>
+    </div>
+    <div class="mute small" style="margin-top:6px">Chưa chọn hình thì trang dùng hình vẽ sẵn. Hình và nhạc chỉ lưu trên máy này (không đưa lên mạng). Bấm ✕ trên hình để bỏ.</div>
+    <input type="file" id="tugImgFile" accept="image/*" hidden><input type="file" id="tugMusicFile" accept="audio/*" hidden>
     <div class="row" style="margin-top:18px;justify-content:center;gap:16px">
       <button class="bigplay one" id="btnTugOne">▶ Chơi trên 1 màn hình</button>
       <button class="bigplay two" id="btnTugTwo">📱 2 đội chơi trên điện thoại</button>
@@ -393,7 +421,7 @@ b) Phát biểu 2 | S
         <span class="tgclock" id="tgClock">⏰ 1:00</span>
         <span class="tgpill R"><em id="tgRScore">0</em><b id="tgRName"></b><i></i></span>
       </div>
-      <button class="tgb" id="tgMute">🔊 Tắt âm</button><button class="tgb" id="tgFull">⛶ Toàn màn hình</button>
+      <button class="tgb" id="tgMusic">🎵 Nhạc</button><button class="tgb" id="tgMute">🔊 Tắt âm</button><button class="tgb" id="tgFull">⛶ Toàn màn hình</button>
     </div>
     <div class="tgmain">
       <div class="tgside L" id="tgSideL"></div>
@@ -570,7 +598,7 @@ D. NaCl
 
 [TL] Giải thích vì sao khi mở nắp chai nước ngọt lại thấy bọt khí thoát ra.
 = Áp suất trong chai giảm nên độ tan của khí CO2 giảm, CO2 thoát ra ngoài.`;
-function defaults(){return{students:[],groups:[],bank:SAMPLE,scores:{stu:{},grp:{}},room:'lhsn-'+rid(20),sheets:[],subs:{},grade:{},
+function defaults(){return{classes:[],cls:'',students:[],groups:[],bank:SAMPLE,scores:{stu:{},grp:{}},room:'lhsn-'+rid(20),sheets:[],subs:{},grade:{},
   tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,src:'own',qs:TUG_SAMPLE},drag:[],dragRes:{},dragCur:'',
   pick:{style:'wheel',mode:'hs',norep:true,called:[],qtype:'all',qorder:'rand',sec:30,qi:0,grp:''}}}
 const OLD_MATH_Q=`[TN] Nghiệm của phương trình x^2 - 4 = 0 là
@@ -666,11 +694,70 @@ A. HCl
 B. H2SO4
 *C. NaOH
 D. NaCl`)}}
-let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>jset(KEY,S),150)}
+let saveT;function save(){syncCls();clearTimeout(saveT);saveT=setTimeout(()=>jset(KEY,S),150)}
 let BANK=[];
+function newCls(name){return{id:rid(6),name,students:[],groups:[],scores:{stu:{},grp:{}},called:[]}}
+function curCls(){return S.classes.find(c=>c.id===S.cls)}
+function syncCls(){const c=curCls();if(c){c.students=S.students;c.groups=S.groups;c.scores=S.scores;c.called=S.pick.called}}
+function useCls(c){S.cls=c.id;S.students=c.students||[];S.groups=c.groups||[];S.scores=c.scores||{stu:{},grp:{}};S.pick.called=c.called||[]}
+function initClasses(){
+  if(!Array.isArray(S.classes)||!S.classes.length){const c=newCls(S.students.length?'Lớp của tôi':'Lớp 1');S.classes=[c];S.cls=c.id;syncCls()}
+  else useCls(curCls()||S.classes[0]);
+}
+function switchCls(id){if(id===S.cls)return;syncCls();const c=S.classes.find(x=>x.id===id);if(!c)return;useCls(c);selStu=null;save();refreshClassUI();toast('Đang dạy lớp '+c.name)}
+function refreshClassUI(){$('#stuText').value=S.students.join('\n');$('#stuCount').textContent=S.students.length+' học sinh';$('#grpN').value=S.groups.length||6;
+  renderGroups();renderScores();renderCls();if(typeof pickInfo==='function'&&$('#pickInfo'))pickInfo();if(typeof fillWho==='function'&&$('#dgWhoList'))fillWho()}
+function renderCls(){const c=curCls();
+  $('#clsList').innerHTML=S.classes.map(k=>`<button class="clsb ${k.id===S.cls?'on':''}" data-cls="${k.id}"><b>${esc(k.name)}</b><span>${(k.students||[]).length} em · ${(k.groups||[]).length} nhóm</span></button>`).join('');
+  $('#clsTop').innerHTML=S.classes.map(k=>`<option value="${k.id}">${esc(k.name)}</option>`).join('');$('#clsTop').value=S.cls;
+  $('#clsName').textContent=c?c.name:'';$('#clsCount').textContent=S.classes.length+' lớp'}
+function makeGroups(list,n,old){const gs=Array.from({length:n},(_,i)=>({name:(old&&old[i]&&old[i].name)||'Nhóm '+(i+1),members:[]}));shuffle(list).forEach((s,i)=>gs[i%n].members.push(s));return gs}
+const isClsName=t=>/^(lớp\s*)?\d{1,2}\s*[\/.\-]?\s*[a-zđ]{0,2}\d{0,2}$/i.test(String(t).trim());
+const isHeaderWord=t=>/^(stt|tt|số tt|họ|họ và tên|họ tên|tên|lớp|giới tính|ngày sinh|họ đệm)$/i.test(String(t).trim());
+const looksName=t=>{t=String(t).trim();return t.length>1&&/\p{L}/u.test(t)&&!/\d/.test(t)&&!isHeaderWord(t)};
+function parsePasteClasses(text){const out={};let cur='';
+  String(text||'').replace(/\r/g,'').split('\n').forEach(line=>{const cells=line.split('\t').map(x=>x.trim()).filter(Boolean);if(!cells.length)return;
+    if(cells.length>=2){const ci=cells.findIndex(isClsName);const nm=cells.filter(looksName).sort((a,b)=>b.length-a.length)[0];if(ci>=0&&nm){(out[cells[ci].replace(/^lớp\s*/i,'')]=out[cells[ci].replace(/^lớp\s*/i,'')]||[]).push(nm);return}if(nm){(out[cur||'Lớp mới']=out[cur||'Lớp mới']||[]).push(nm);return}}
+    const t=cells[0];if(isClsName(t)){cur=t.replace(/^lớp\s*/i,'');out[cur]=out[cur]||[];return}
+    const nm=t.replace(/^\d+[.)\s]+/,'');if(looksName(nm))(out[cur||'Lớp mới']=out[cur||'Lớp mới']||[]).push(nm)});
+  return out}
+function loadXLSX(){return window.XLSX?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('không tải được bộ đọc Excel'));document.head.appendChild(sc)})}
+async function parseExcelClasses(file){await loadXLSX();const wb=XLSX.read(await file.arrayBuffer());const out={};
+  wb.SheetNames.forEach(sn=>{const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''}).map(r=>r.map(c=>String(c).trim()));if(!rows.length)return;
+    let h=-1,ci=-1,ni=-1,hoi=-1,teni=-1;
+    for(let i=0;i<Math.min(20,rows.length)&&h<0;i++){let a=-1,b=-1,c=-1,d=-1;rows[i].forEach((v,j)=>{const t=v.toLowerCase().replace(/\s+/g,' ');
+        if(/^lớp( học)?$/.test(t))a=j;if(/họ (và )?tên|tên học sinh|họ tên hs/.test(t))b=j;if(/^họ( và)?( tên)? ?đệm$|^họ$|^họ lót$/.test(t))c=j;if(/^tên$/.test(t))d=j});
+      if(b>=0||(c>=0&&d>=0)){h=i;ci=a;ni=b;hoi=c;teni=d}}
+    if(h<0){let best=-1,bc=0;const w=Math.max(...rows.map(r=>r.length));for(let j=0;j<w;j++){const n=rows.filter(r=>looksName(r[j]||'')&&/\s/.test(r[j]||'')).length;if(n>bc){bc=n;best=j}}if(best<0)return;ni=best}
+    rows.slice(h+1).forEach(r=>{let nm=ni>=0?r[ni]:((r[hoi]||'')+' '+(r[teni]||'')).trim();nm=String(nm||'').replace(/\s+/g,' ').trim();if(!looksName(nm))return;
+      const cl=(ci>=0&&r[ci]?r[ci]:sn).replace(/^lớp\s*/i,'').trim();(out[cl]=out[cl]||[]).push(nm)})});
+  return out}
+function openClsImport(){
+  const ov=document.createElement('div');ov.className='overlay';ov.innerHTML=`<div class="modal" style="max-width:820px"><button class="x sm" data-x>✕</button><h2>📥 Nhập danh sách lớp</h2>
+    <div class="info"><b>Cách 1 – file Excel:</b> mỗi trang tính (sheet) là một lớp, tên sheet là tên lớp; hoặc một sheet có cột <b>Lớp</b> và cột <b>Họ và tên</b> (file xuất từ vnEdu dùng được).</div>
+    <input type="file" data-f accept=".xlsx,.xls,.csv">
+    <div class="info" style="margin-top:12px"><b>Cách 2 – dán:</b> chép 2 cột <b>Lớp | Họ và tên</b> từ Excel rồi dán vào ô dưới. Hoặc gõ tên lớp ở một dòng (VD: <b>8A1</b>), các dòng tiếp theo là tên học sinh lớp đó, rồi đến lớp khác.</div>
+    <textarea data-t rows="9" placeholder="8A1&#10;Nguyễn Văn An&#10;Trần Thị Bình&#10;8A2&#10;Lê Văn Cường&#10;..."></textarea>
+    <div data-p style="margin-top:8px"></div>
+    <div class="row" style="margin-top:10px"><label class="row" style="margin:0;color:var(--ink)"><input type="checkbox" data-g style="width:auto" checked> Chia nhóm ngẫu nhiên luôn, mỗi lớp</label><input type="number" data-n value="6" min="2" max="12" style="width:70px"><span class="small mute">nhóm</span><button class="pri" data-ok style="margin-left:auto" disabled>💾 Lưu các lớp</button></div></div>`;
+  document.body.appendChild(ov);let found={};
+  const prev=()=>{const ks=Object.keys(found).filter(k=>found[k].length);ov.querySelector('[data-ok]').disabled=!ks.length;
+    ov.querySelector('[data-p]').innerHTML=ks.length?`<b>Tìm thấy ${ks.length} lớp:</b><div class="row" style="margin-top:6px">${ks.map(k=>{const ex=S.classes.find(c=>c.name.toLowerCase()===k.toLowerCase());return `<span class="chip" title="${esc(found[k].slice(0,6).join(', '))}…">${esc(k)}: ${found[k].length} em${ex?' <b style="color:var(--warn)">(thay lớp đã có)</b>':''}</span>`}).join('')}</div>`:'<span class="mute small">Chưa đọc được tên học sinh nào.</span>'};
+  ov.querySelector('[data-t]').addEventListener('input',e=>{found=parsePasteClasses(e.target.value);prev()});
+  ov.querySelector('[data-f]').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;ov.querySelector('[data-p]').textContent='Đang đọc file…';try{found=await parseExcelClasses(f);prev()}catch(err){ov.querySelector('[data-p]').innerHTML='<div class="note">Không đọc được file: '+esc(err.message)+'</div>'}});
+  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))return ov.remove();
+    if(e.target.closest('[data-ok]')){const doG=ov.querySelector('[data-g]').checked,n=Math.max(2,Math.min(12,+ov.querySelector('[data-n]').value||6));syncCls();let last=null,cnt=0;
+      Object.entries(found).forEach(([k,list])=>{if(!list.length)return;let c=S.classes.find(x=>x.name.toLowerCase()===k.toLowerCase());if(!c){c=newCls(k);S.classes.push(c)}
+        c.students=[...new Set(list)];c.groups=doG?makeGroups(c.students,n):[];c.called=[];last=c;cnt++});
+      S.classes=S.classes.filter(c=>c.students.length||c.id===S.cls||S.classes.length===1);
+      if(S.classes.length>1)S.classes=S.classes.filter(c=>!(c.name==='Lớp 1'&&!c.students.length));
+      S.classes.sort((a,b)=>a.name.localeCompare(b.name,'vi',{numeric:true}));
+      const keep=curCls()&&curCls().students.length?curCls():last;useCls(keep);save();refreshClassUI();ov.remove();toast(`✅ Đã nhập ${cnt} lớp`)}});
+}
+
 
 function teacherMain(){
-  loadS();
+  loadS();initClasses();
   // tabs
   $('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));$$('section.tab').forEach(s=>s.classList.toggle('on',s.id==='t-'+b.dataset.t));jset('lhsn_tab',b.dataset.t);if(b.dataset.t==='keoco')tugRender();if(b.dataset.t==='goiten')pickInfo()});
   const lt=jget('lhsn_tab');if(lt){const b=$(`#tabs button[data-t="${lt}"]`);b&&b.click()}
@@ -684,8 +771,16 @@ function teacherMain(){
 /* ---------- LỚP & NHÓM ---------- */
 let selStu=null;
 function initLop(){
+  $('#clsTop').onchange=e=>switchCls(e.target.value);
+  $('#clsList').addEventListener('click',e=>{const b=e.target.closest('[data-cls]');if(b)switchCls(b.dataset.cls)});
+  $('#btnClsImport').onclick=openClsImport;
+  $('#btnClsAdd').onclick=()=>{const n=prompt('Tên lớp mới (VD: 8A1):');if(!n||!n.trim())return;syncCls();const c=newCls(n.trim());S.classes.push(c);S.classes.sort((a,b)=>a.name.localeCompare(b.name,'vi',{numeric:true}));useCls(c);save();refreshClassUI();$('#stuText').focus()};
+  $('#btnClsRename').onclick=()=>{const c=curCls();const n=prompt('Đổi tên lớp:',c.name);if(!n||!n.trim())return;c.name=n.trim();save();renderCls()};
+  $('#btnClsDel').onclick=()=>{const c=curCls();if(S.classes.length<2)return toast('Phải còn ít nhất 1 lớp');if(!confirm(`Xoá lớp ${c.name} (danh sách, nhóm, điểm thi đua)?`))return;S.classes=S.classes.filter(x=>x!==c);useCls(S.classes[0]);save();refreshClassUI()};
+  $('#btnClsSplitAll').onclick=()=>{const n=+prompt('Mỗi lớp chia mấy nhóm?','6');if(!n||n<2||n>12)return;if(!confirm(`Chia lại ngẫu nhiên ${n} nhóm cho tất cả ${S.classes.length} lớp? Cách chia cũ sẽ mất.`))return;syncCls();
+    S.classes.forEach(c=>{if(c.students.length)c.groups=makeGroups(c.students,n,c.groups)});useCls(curCls());save();refreshClassUI();toast('✅ Đã chia nhóm cho tất cả các lớp')};
   const ta=$('#stuText');ta.value=S.students.join('\n');
-  const upd=()=>{S.students=ta.value.split('\n').map(x=>x.replace(/^\s*\d+[.)\t ]+/,'').replace(/\t.*/,'').trim()).filter(Boolean);$('#stuCount').textContent=S.students.length+' học sinh';save();typeof refreshWheel==='function'&&$('#wheel')&&refreshWheel()};
+  const upd=()=>{S.students=ta.value.split('\n').map(x=>x.replace(/^\s*\d+[.)\t ]+/,'').replace(/\t.*/,'').trim()).filter(Boolean);$('#stuCount').textContent=S.students.length+' học sinh';save();$('#clsList')&&renderCls();typeof refreshWheel==='function'&&$('#wheel')&&refreshWheel()};
   ta.addEventListener('input',upd);upd();
   const split=rand=>{if(!S.students.length)return toast('Hãy dán danh sách học sinh trước');
     if(S.groups.some(g=>g.members.length)&&!confirm('Chia lại nhóm? Cách chia cũ sẽ mất.'))return;
@@ -708,7 +803,7 @@ function initLop(){
   $('#grpScores').addEventListener('click',e=>{const b=e.target.closest('[data-gp]');if(b){addScore(null,b.dataset.g,+b.dataset.gp)}});
   $('#btnExport').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,1)],{type:'application/json'}));a.download='lop-hoc-soi-noi-'+new Date().toISOString().slice(0,10)+'.json';a.click()};
   $('#fileImport').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!confirm('Thay dữ liệu trên máy này bằng bản sao lưu?'))return;S=Object.assign(defaults(),d);jset(KEY,S);location.reload()}catch(err){toast('File không đúng')}};
-  renderGroups();renderScores();
+  renderGroups();renderScores();renderCls();
 }
 function groupOf(name){const g=S.groups.find(g=>g.members.includes(name));return g?g.name:''}
 function renderGroups(){
@@ -846,35 +941,52 @@ function tugQuestion(){
   const order=x.opts.length===2?[0,1]:shuffle(x.opts.map((_,i)=>i));return{q:x.q,opts:order.map(i=>x.opts[i]),ans:order.indexOf(x.ans)};
 }
 
-function kidSVG(x,shirt,pant,girl,hair){
+function kidSVG(x,J,D,girl){
+  const sk='#f8d2b0',ol='#2b2b2b',hair='#2a1c14';
+  const limb=(d,w,c)=>`<path d="${d}" stroke="${ol}" stroke-width="${w+4}" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="${d}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  const shoe=(cx,cy,c)=>`<path d="M${cx-13} ${cy} q1 -11 13 -11 q13 0 15 11 z" fill="${c}" stroke="${ol}" stroke-width="2"/><rect x="${cx-14}" y="${cy-1}" width="30" height="5" rx="2.5" fill="#fff" stroke="${ol}" stroke-width="1.5"/>`;
+  const backLeg='M18 332 L6 362 L18 389',frontLeg='M24 332 L46 360 L66 387';
+  const legs=girl
+    ?limb(backLeg,8,sk)+limb(frontLeg,8,sk)+`<path d="M14 380 L18 388 M62 378 L66 386" stroke="#fff" stroke-width="7" stroke-linecap="round"/>`+shoe(20,394,'#f472b6')+shoe(70,392,'#f472b6')
+    :limb(backLeg,15,D)+limb(frontLeg,15,J)+`<path d="M28 336 L47 361 L63 382" stroke="#fff" stroke-width="2.5" stroke-opacity=".85" fill="none"/>`+shoe(20,394,'#3a3f4b')+shoe(70,392,'#3a3f4b');
   return `<g transform="translate(${x},0)"><g class="kid">
-    <path d="M22 328 L58 388" stroke="${pant}" stroke-width="13" stroke-linecap="round"/>
-    <path d="M20 330 L4 360 L18 390" stroke="${pant}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <ellipse cx="64" cy="393" rx="12" ry="6" fill="#2b2b2b"/><ellipse cx="22" cy="394" rx="12" ry="6" fill="#2b2b2b"/>
-    ${girl?`<path d="M6 312 L40 316 L46 344 L-4 342Z" fill="${pant}"/>`:''}
-    <rect x="-13" y="-32" width="27" height="62" rx="11" fill="${shirt}" transform="translate(14,305) rotate(-20)"/>
-    <path d="M6 284 L60 298" stroke="${shirt}" stroke-width="10" stroke-linecap="round"/>
-    <path d="M10 292 L52 304" stroke="${shirt}" stroke-width="10" stroke-linecap="round"/>
-    <circle cx="62" cy="299" r="6" fill="#f6c9a0"/><circle cx="54" cy="304" r="6" fill="#f6c9a0"/>
-    <path d="M-2 279 L16 282 L8 298Z" fill="#e11d1d"/>
-    <circle cx="-4" cy="256" r="18" fill="#f6c9a0"/>
-    <path d="M-22 254 A18 18 0 0 1 14 248 L8 244 Q-4 234 -16 242Z" fill="${hair}"/>
-    ${girl?`<circle cx="-24" cy="246" r="7" fill="${hair}"/>`:''}
-    <circle cx="4" cy="255" r="2.2" fill="#222"/><path d="M2 264 Q7 266 10 262" stroke="#a33" stroke-width="2" fill="none"/>
+    ${legs}
+    ${limb('M12 288 L58 305',10,D)}<circle cx="61" cy="305" r="6.5" fill="${sk}" stroke="${ol}" stroke-width="2"/>
+    ${girl?`<path d="M2 318 L42 314 L54 350 L-8 352Z" fill="${J}" stroke="${ol}" stroke-width="2" stroke-linejoin="round"/><path d="M14 318 L10 350 M26 316 L26 350 M36 315 L42 349" stroke="${ol}" stroke-opacity=".35" stroke-width="1.5"/>`:''}
+    <g transform="rotate(-22 20 332)">
+      <rect x="17" y="254" width="10" height="16" fill="${sk}" stroke="${ol}" stroke-width="2"/>
+      <rect x="5" y="266" width="32" height="${girl?54:66}" rx="12" fill="${J}" stroke="${ol}" stroke-width="2"/>
+      <path d="M21 272 L21 ${girl?318:330}" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+      <path d="M9 270 L21 281 L33 270" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M9 267 L33 267 L21 289Z" fill="#e3262b" stroke="${ol}" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="21" cy="273" r="4" fill="#c81e23"/><path d="M21 273 L15 294 M21 273 L28 293" stroke="#e3262b" stroke-width="5" stroke-linecap="round"/>
+      ${girl?`<ellipse cx="-6" cy="242" rx="8" ry="13" fill="${hair}" stroke="${ol}" stroke-width="1.5" transform="rotate(20 -6 242)"/><circle cx="1" cy="231" r="3.5" fill="#e3262b"/>`:''}
+      <circle cx="22" cy="238" r="24" fill="${sk}" stroke="${ol}" stroke-width="2"/>
+      <circle cx="11" cy="243" r="5" fill="${sk}" stroke="${ol}" stroke-width="1.8"/>
+      <path d="M-3 241 C-5 214 13 205 28 207 C43 209 50 221 47 233 C41 224 31 222 23 227 C19 231 14 233 13 241 C8 246 1 247 -3 241Z" fill="${hair}" stroke="${ol}" stroke-width="1.5"/>
+      <path d="M28 230 L34 228 M39 227 L45 229" stroke="${ol}" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="31" cy="238" r="3.3" fill="${ol}"/><circle cx="41" cy="237" r="3.3" fill="${ol}"/><circle cx="32" cy="237" r="1.1" fill="#fff"/><circle cx="42" cy="236" r="1.1" fill="#fff"/>
+      <ellipse cx="44" cy="246" rx="4.5" ry="2.6" fill="#f7a1b5" opacity=".8"/>
+      <path d="M31 248 Q37 256 44 247 Z" fill="#c0392b" stroke="${ol}" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+    ${limb('M8 282 L64 299',11,J)}<path d="M14 281 L58 294" stroke="#fff" stroke-width="2" stroke-opacity=".8"/>
+    <circle cx="67" cy="299" r="7" fill="${sk}" stroke="${ol}" stroke-width="2"/>
   </g></g>`;
 }
 function tugFieldSVG(){
-  const c=300,b='#2f5bd3',r='#d42a2a',kidsL=[[40,0],[115,1],[190,0]];
-  const team=(sh,pa)=>kidsL.map(([x,g],i)=>kidSVG(x,sh,g?sh:pa,g,'#2a1a10')).join('');
+  const IM=jget('lhsn_tugimg')||{};
+  const c=300,b='#2f5bd3',r='#d42a2a',kidsL=[[34,0],[108,1],[182,0]];
+  const team=(J,D)=>kidsL.map(([x,g])=>kidSVG(x,J,D,g)).join('');
   return `<svg viewBox="-90 120 780 360" preserveAspectRatio="xMidYMid meet">
     <line x1="${c}" y1="130" x2="${c}" y2="470" stroke="#22c55e" stroke-width="4" stroke-dasharray="10 8"/>
     <line x1="${c-G_DIST}" y1="150" x2="${c-G_DIST}" y2="450" stroke="${b}" stroke-opacity=".45" stroke-width="3" stroke-dasharray="8 8"/>
     <line x1="${c+G_DIST}" y1="150" x2="${c+G_DIST}" y2="450" stroke="${r}" stroke-opacity=".45" stroke-width="3" stroke-dasharray="8 8"/>
     <g id="tgRope">
-      <line x1="60" y1="301" x2="540" y2="301" stroke="#3b2a1c" stroke-width="6" stroke-linecap="round"/>
-      <g class="pullL">${team('#2d5fc4','#24489a')}</g>
-      <g class="pullR" transform="translate(600,0) scale(-1,1)">${team('#c62828','#9e1c1c')}</g>
-      <g transform="translate(${c},301)"><path d="M0 0 L-20 -14 L-20 14Z M0 0 L20 -14 L20 14Z" fill="#e11d1d"/><path d="M0 0 L-8 30 M0 0 L8 30" stroke="#e11d1d" stroke-width="5"/><circle r="6" fill="#b91c1c"/></g>
+      ${IM.both?`<image href="${IM.both}" class="kidimg" x="-75" y="140" width="750" height="320" preserveAspectRatio="xMidYMid meet"/>`:`
+      <line x1="70" y1="302" x2="530" y2="302" stroke="#3b2a1c" stroke-width="7" stroke-linecap="round"/>
+      ${IM.L?`<image href="${IM.L}" class="kidimg" x="-80" y="170" width="356" height="260" preserveAspectRatio="xMaxYMid meet"/>`:`<g class="pullL">${team('#3368d1','#244c9e')}</g>`}
+      ${IM.R?`<image href="${IM.R}" class="kidimg" x="324" y="170" width="356" height="260" preserveAspectRatio="xMinYMid meet"/>`:`<g class="pullR" transform="translate(600,0) scale(-1,1)">${team('#d63333','#a32121')}</g>`}
+      <g transform="translate(${c},301)"><path d="M0 0 L-20 -14 L-20 14Z M0 0 L20 -14 L20 14Z" fill="#e11d1d"/><path d="M0 0 L-8 30 M0 0 L8 30" stroke="#e11d1d" stroke-width="5"/><circle r="6" fill="#b91c1c"/></g>`}
     </g></svg>`;
 }
 function initTug(){
@@ -889,22 +1001,61 @@ function initTug(){
   const tprev=()=>{const qs=parseQs(T.qs).filter(q=>q.t==='TN'||q.t==='DS');$('#tugPrev').innerHTML=qs.map((q,i)=>qHTML(q,i)).join('')||'<div class="mute">Chưa có câu hỏi.</div>';cnt()};
   let tpt;tt.addEventListener('input',()=>{T.qs=tt.value;save();clearTimeout(tpt);tpt=setTimeout(tprev,250)});tprev();
   $('#btnTugSample').onclick=()=>{if(tt.value.trim()&&!confirm('Thay câu hỏi hiện có bằng câu mẫu Hoá 8?'))return;tt.value=TUG_SAMPLE;tt.dispatchEvent(new Event('input'))};
+  initTugMedia();
+  $('#tgMusic').onclick=()=>{S.tug.music=!S.tug.music;save();$('#tugMusicOn').checked=S.tug.music;if(S.tug.music&&TG.run&&!TG.paused)musicStart();else musicStop();$('#tgMusic').style.opacity=S.tug.music?1:.5};
   $('#btnTugOne').onclick=()=>tugOpen('one');$('#btnTugTwo').onclick=()=>tugOpen('two');
   $('#tgExit').onclick=tugClose;
   $('#tgPause').onclick=tugPause;
-  $('#tgMute').onclick=()=>{MUTE=!MUTE;$('#tgMute').textContent=MUTE?'🔇 Bật âm':'🔊 Tắt âm'};
+  $('#tgMute').onclick=()=>{MUTE=!MUTE;$('#tgMute').textContent=MUTE?'🔇 Bật âm':'🔊 Tắt âm';if(MUTE)musicStop();else if(TG.run&&!TG.paused)musicStart()};
   $('#tgFull').onclick=()=>document.fullscreenElement?document.exitFullscreen():$('#tugGame').requestFullscreen().catch(()=>{});
   ['L','R'].forEach(s=>$('#tgSide'+s).addEventListener('click',e=>{const b=e.target.closest('.tgopt');if(b)tugAnswer(s,+b.dataset.k);const a=e.target.closest('[data-tg]');if(a)tugAct(a.dataset.tg,s)}));
   $('#tgField').addEventListener('click',e=>{const a=e.target.closest('[data-tg]');if(a)tugAct(a.dataset.tg)});
-  document.addEventListener('keydown',e=>{if($('#tugGame').hidden||e.target.matches('input,textarea,select'))return;const k=e.key.toLowerCase();
+  document.addEventListener('keydown',e=>{if($('#tugGame').hidden||e.target.matches?.('input,textarea,select'))return;const k=e.key.toLowerCase();
     if(k===' '){e.preventDefault();if(TG.run)tugPause();return}
     if(TG.mode!=='one')return;
     for(const s of ['L','R']){const i=TKEYS[s].indexOf(k);if(i>=0){tugAnswer(s,i);return}}});
 }
 function tugRender(){}
+/* hình đội do thầy chọn (lưu localStorage trên máy) */
+let imgSlot=null;
+function renderImgSlots(){const IM=jget('lhsn_tugimg')||{};$$('.imgslot[data-slot]').forEach(el=>{const k=el.dataset.slot,b=el.querySelector('.imgbox');b.style.backgroundImage=IM[k]?`url("${IM[k]}")`:'';b.innerHTML=IM[k]?'<button class="sm rm" data-rm>✕</button>':''})}
+function shrinkImage(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const sc=Math.min(1,1600/im.width,900/im.height),cv=document.createElement('canvas');cv.width=Math.round(im.width*sc);cv.height=Math.round(im.height*sc);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);URL.revokeObjectURL(u);let d=cv.toDataURL('image/webp',.88);if(!d.startsWith('data:image/webp'))d=cv.toDataURL('image/png');ok(d)};im.onerror=()=>no(new Error('không mở được ảnh'));im.src=u})}
+/* nhạc nền: nhạc vui tự soạn bằng WebAudio, hoặc file nhạc thầy chọn (lưu IndexedDB) */
+function idb(){return new Promise((ok,no)=>{const r=indexedDB.open('lhsn',1);r.onupgradeneeded=()=>r.result.createObjectStore('f');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function idbSet(k,v){const db=await idb();return new Promise((ok,no)=>{const t=db.transaction('f','readwrite');v==null?t.objectStore('f').delete(k):t.objectStore('f').put(v,k);t.oncomplete=ok;t.onerror=()=>no(t.error)})}
+async function idbGet(k){try{const db=await idb();return await new Promise(ok=>{const r=db.transaction('f').objectStore('f').get(k);r.onsuccess=()=>ok(r.result);r.onerror=()=>ok(null)})}catch(e){return null}}
+const MUS={timer:null,next:0,step:0,g:null,audio:null,playing:false};
+const MEL=[72,76,79,76,81,79,76,74,72,76,79,84,81,79,76,0,74,77,81,77,79,76,74,72,74,76,79,76,72,0,72,0];
+const BAS=[48,0,55,0,53,0,55,0,48,0,55,0,53,0,55,0,50,0,57,0,55,0,52,0,50,0,55,0,48,0,48,0];
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function musNote(f,t,d,type,v){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(MUS.g);o.start(t);o.stop(t+d+.02)}
+function musHat(t){const n=AC.sampleRate*.04,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='highpass';f.frequency.value=6000;g.gain.value=.25;s.connect(f);f.connect(g);g.connect(MUS.g);s.start(t)}
+function musicStart(){if(MUS.playing||MUTE||!S.tug.music)return;MUS.playing=true;
+  if(MUS.audio){MUS.audio.currentTime=MUS.audio.currentTime||0;MUS.audio.play().catch(()=>{});return}
+  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume()}catch(e){return}
+  MUS.g=AC.createGain();MUS.g.gain.value=.09;MUS.g.connect(AC.destination);MUS.next=AC.currentTime+.05;MUS.step=0;const dt=60/150/2;
+  MUS.timer=setInterval(()=>{while(MUS.next<AC.currentTime+.15){const i=MUS.step%32,t=MUS.next;if(MEL[i])musNote(mf(MEL[i]),t,dt*.9,'square',.35);if(BAS[i])musNote(mf(BAS[i]),t,dt*1.8,'triangle',.7);if(i%2)musHat(t);MUS.next+=dt;MUS.step++}},30)}
+function musicStop(){MUS.playing=false;clearInterval(MUS.timer);MUS.timer=null;if(MUS.g){try{MUS.g.disconnect()}catch(e){}MUS.g=null}if(MUS.audio)MUS.audio.pause()}
+async function initMusic(){const b=await idbGet('music');if(b){MUS.audio=new Audio(URL.createObjectURL(b));MUS.audio.loop=true;MUS.audio.volume=.6;$('#musicName').textContent='🎵 '+(S.tug.musicName||'File nhạc của thầy')}}
+function initTugMedia(){
+  if(S.tug.music==null)S.tug.music=true;$('#tugMusicOn').checked=S.tug.music;
+  $('#tugMusicOn').onchange=e=>{S.tug.music=e.target.checked;save()};
+  $('#btnMusicTest').onclick=()=>{if(MUS.playing){musicStop();$('#btnMusicTest').textContent='▶ Nghe thử';return}const on=S.tug.music;S.tug.music=true;musicStart();S.tug.music=on;$('#btnMusicTest').textContent='⏹ Dừng'};
+  $('#btnMusicPick').onclick=()=>$('#tugMusicFile').click();
+  $('#tugMusicFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;musicStop();try{await idbSet('music',f);S.tug.musicName=f.name;save();await initMusic();toast('✅ Đã chọn nhạc: '+f.name)}catch(err){toast('Không lưu được file nhạc')}e.target.value=''};
+  $('#btnMusicDef').onclick=async()=>{musicStop();await idbSet('music',null).catch(()=>{});MUS.audio=null;S.tug.musicName='';save();$('#musicName').textContent='Nhạc vui có sẵn';toast('Dùng nhạc có sẵn')};
+  initMusic();
+  $$('.imgslot[data-slot]').forEach(el=>el.addEventListener('click',e=>{const k=el.dataset.slot;
+    if(e.target.closest('[data-rm]')){e.stopPropagation();const IM=jget('lhsn_tugimg')||{};delete IM[k];jset('lhsn_tugimg',IM);renderImgSlots();return}
+    imgSlot=k;$('#tugImgFile').click()}));
+  $('#tugImgFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!imgSlot)return;try{const d=await shrinkImage(f);const IM=jget('lhsn_tugimg')||{};IM[imgSlot]=d;
+      try{localStorage.setItem('lhsn_tugimg',JSON.stringify(IM))}catch(err){return toast('Ảnh quá lớn, hãy chọn ảnh nhỏ hơn')}renderImgSlots();toast('✅ Đã đặt hình')}catch(err){toast(err.message)}};
+  renderImgSlots();
+}
 function tugOpen(mode){
   if(!tugPool().length)return toast('Chưa có câu hỏi — nhập câu hỏi ở khung bên dưới');
   TG.mode=mode;$('#tugGame').hidden=false;document.body.style.overflow='hidden';
+  $('#tgMusic').style.opacity=S.tug.music?1:.5;
   $('#tgLName').textContent=S.tug.L||'Đội Xanh';$('#tgRName').textContent=S.tug.R||'Đội Đỏ';
   $('#tgField').innerHTML=tugFieldSVG()+'<div class="tgcover" id="tgCover"></div>';
   $('#tugGame').requestFullscreen?.().catch(()=>{});
@@ -922,14 +1073,15 @@ function tugStart(){
   TG.run=true;TG.paused=false;TG.pos=0;TG.score={L:0,R:0};TG.used=[];TG.left=S.tug.sec*1000;TG.winner=null;tugScore();tugRope();tugCover('');
   if(TG.mode==='one'){tugNextQ('L');tugNextQ('R')}
   else{TG.g=rid(6);TG.dev={};tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target});['L','R'].forEach(s=>tugPhoneSide(s))}
-  beep(523,.12);setTimeout(()=>beep(784,.2),140);
+  beep(523,.12);setTimeout(()=>beep(784,.2),140);musicStop();setTimeout(musicStart,350);
   let last=Date.now();clearInterval(TG.timer);
   TG.timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(TG.paused||!TG.run)return;const before=Math.ceil(TG.left/1000);TG.left=Math.max(0,TG.left-dt);tugClockShow();
     const sec=Math.ceil(TG.left/1000);if(sec!==before&&sec<=10&&sec>0)beep(700,.06);
     if(!TG.left)tugFinish(TG.pos<0?'L':TG.pos>0?'R':null,true)},200);
 }
-function tugStop(){TG.run=false;clearInterval(TG.timer)}
+function tugStop(){TG.run=false;clearInterval(TG.timer);musicStop()}
 function tugPause(){if(!TG.run)return;TG.paused=!TG.paused;$('#tgPause').textContent=TG.paused?'▶':'⏸';
+  if(TG.paused)musicStop();else musicStart();
   tugCover(TG.paused?`<div class="tgbig">⏸ Tạm dừng</div><button class="bigplay one" data-tg="resume">▶ Chơi tiếp</button>`:'');
   if(TG.mode==='two')tugSend({e:TG.paused?'pause':'resume',g:TG.g,ms:TG.left})}
 function tugClockShow(){const s=Math.ceil(TG.left/1000);$('#tgClock').textContent='⏰ '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0');$('#tgClock').classList.toggle('low',TG.run&&s<=10)}
