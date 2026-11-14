@@ -145,6 +145,21 @@ body.student #student{display:block}
 .ds button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 .sticky{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 12px;z-index:30}
 .sticky .in{max-width:760px;margin:0 auto}
+.dtime{font-size:clamp(28px,4vw,46px);font-weight:800;font-variant-numeric:tabular-nums}
+.dtray{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:64px;margin:12px 0;padding:12px;border-radius:14px;background:var(--soft)}
+.dcard{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 18px;font-size:clamp(17px,1.9vw,24px);font-weight:700;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.dcard:hover{border-color:var(--pri)}
+.dcard.sel{border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 35%,transparent)}
+.dcard.bad{border-color:var(--bad);background:var(--badbg)}
+.dghost{position:fixed;pointer-events:none;z-index:99;transform:translate(-50%,-50%) scale(1.08);box-shadow:0 10px 26px rgba(0,0,0,.28)}
+.dzones{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.dzone{border:3px dashed color-mix(in srgb,var(--c) 60%,transparent);border-radius:16px;padding:12px;min-height:160px;background:color-mix(in srgb,var(--c) 7%,var(--card));transition:background .15s}
+.dzone.over{background:color-mix(in srgb,var(--c) 22%,var(--card));border-style:solid}
+.dzl{font-weight:800;color:var(--c);font-size:clamp(17px,1.9vw,24px);margin-bottom:8px;text-align:center}
+.dzi{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.dchip{border-radius:10px;padding:6px 12px;font-weight:700;font-size:clamp(15px,1.6vw,20px);background:color-mix(in srgb,var(--c) 20%,var(--card));border:2px solid color-mix(in srgb,var(--c) 50%,transparent);animation:pop .25s;cursor:pointer}
+.dchip.ok{border-color:var(--ok)}.dchip.no{border-color:var(--bad);background:var(--badbg)}
+.dstart{text-align:center;padding:30px 10px;font-size:20px;color:var(--mute)}
 .done{background:var(--okbg);color:var(--ok);border-radius:12px;padding:12px;font-weight:600;margin:12px 0}
 </style>
 </head>
@@ -160,6 +175,7 @@ body.student #student{display:block}
     <button data-t="cauhoi">📚 Câu hỏi</button>
     <button data-t="goiten">🎯 Gọi tên</button>
     <button data-t="keoco">💪 Kéo co</button>
+    <button data-t="keotha">🧩 Kéo thả</button>
     <button data-t="thaoluan">💬 Thảo luận nhóm</button>
     <button data-t="baitap">📝 Giao bài tập</button>
   </nav>
@@ -274,6 +290,9 @@ b) Phát biểu 2 | S
           <div style="width:110px"><label>Thời gian</label><select id="pickSec"><option>0</option><option>15</option><option selected>30</option><option>45</option><option>60</option><option>90</option><option>120</option></select></div>
         </div>
         <div class="mute small" id="pickInfo" style="margin-top:6px"></div>
+        <details style="margin-top:10px"><summary><b>✏️ Nhập / sửa câu hỏi gọi tên</b></summary>
+          <div class="mute small">Dùng chung với tab “Câu hỏi”. Xem cách gõ ở tab đó.</div>
+          <div class="fbar" id="pickFbar"></div><textarea id="pickBank" rows="12" spellcheck="false"></textarea></details>
       </div>
       <div class="card">
         <h2>Lượt vừa gọi</h2>
@@ -293,8 +312,7 @@ b) Phát biểu 2 | S
       <select id="tugPickTeams" style="width:auto"><option value="">Chọn từ nhóm…</option></select>
       <span class="small mute">Kéo</span><input id="tugTarget" type="number" min="2" max="10" style="width:70px"><span class="small mute">bước thì thắng</span>
       <span class="small mute">Mỗi câu</span><select id="tugSec" style="width:auto"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option></select><span class="small mute">giây</span>
-      <label class="row" style="margin:0;color:var(--ink)"><input type="checkbox" id="tugBank" style="width:auto"> Câu hỏi ngân hàng</label>
-      <label class="row" style="margin:0;color:var(--ink)"><input type="checkbox" id="tugMath" style="width:auto"> Tính nhanh</label>
+      <span class="small mute">Lấy câu hỏi</span><select id="tugSrc" style="width:auto"><option value="own">Câu hỏi kéo co (khung bên dưới)</option><option value="bank">Ngân hàng câu hỏi</option><option value="both">Cả hai</option></select>
       <button class="sm ghost" data-fs="tugStage" style="margin-left:auto">⛶</button>
     </div>
     <div class="arena">
@@ -319,8 +337,19 @@ b) Phát biểu 2 | S
       <div class="team R" id="teamR"><div class="tn" id="tugRName"></div><div class="pts" id="tugRPts"></div><div id="tugRBtns" style="display:grid;gap:8px"></div><div class="pts">Phím 7 8 9 0</div></div>
     </div>
   </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="row"><h2 style="margin:0">✏️ Thầy cô nhập câu hỏi cho Kéo co</h2><button class="sm" id="btnTugSample" style="margin-left:auto">Nạp câu mẫu Hoá 8</button></div>
+      <div class="mute small">Dùng câu trắc nghiệm <b>[TN]</b> (đánh * trước đáp án đúng) và đúng/sai <b>[DS]</b> (mỗi ý a, b… thành một câu Đúng/Sai). Gõ công thức bình thường: H2SO4 → H₂SO₄, Fe3+ → Fe³⁺.</div>
+      <div class="fbar" id="tugFbar"></div>
+      <textarea id="tugText" rows="16" spellcheck="false"></textarea>
+    </div>
+    <div class="card"><div class="row"><h2 style="margin:0">Xem trước</h2><span class="mute small" id="tugCount" style="margin-left:auto"></span></div><div id="tugPrev" style="max-height:620px;overflow:auto"></div></div>
+  </div>
 </section>
 
+<!-- ===== KÉO THẢ ===== -->
+<section class="tab" id="t-keotha"></section>
 <!-- ===== THẢO LUẬN ===== -->
 <section class="tab" id="t-thaoluan"></section>
 <!-- ===== BÀI TẬP ===== -->
@@ -478,19 +507,110 @@ d) Ion SO42- và Fe3+ đều có trong sản phẩm. | S
 [TLN] Khối lượng phân tử của CO2 là bao nhiêu amu?
 = 44
 
-[TN] Nghiệm của phương trình x^2 - 4 = 0 là
-A. x = 4
-*B. x = +-2
-C. x = 2
-D. x = 16
+[TN] Dung dịch nào sau đây làm quỳ tím hoá xanh?
+A. HCl
+B. H2SO4
+*C. NaOH
+D. NaCl
 
 [TL] Giải thích vì sao khi mở nắp chai nước ngọt lại thấy bọt khí thoát ra.
 = Áp suất trong chai giảm nên độ tan của khí CO2 giảm, CO2 thoát ra ngoài.`;
 function defaults(){return{students:[],groups:[],bank:SAMPLE,scores:{stu:{},grp:{}},room:'lhsn-'+rid(20),sheets:[],subs:{},grade:{},
-  tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,bank:true,math:true},
+  tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,src:'own',qs:TUG_SAMPLE},drag:[],dragRes:{},dragCur:'',
   pick:{mode:'hs',norep:true,called:[],qtype:'all',qorder:'rand',sec:30,qi:0,grp:''}}}
+const OLD_MATH_Q=`[TN] Nghiệm của phương trình x^2 - 4 = 0 là
+A. x = 4
+*B. x = +-2
+C. x = 2
+D. x = 16`;
+const TUG_SAMPLE=`[TN] Dung dịch làm quỳ tím hoá đỏ là
+*A. HCl
+B. NaOH
+C. NaCl
+D. KNO3
+
+[TN] Base nào sau đây tan được trong nước?
+A. Cu(OH)2
+*B. NaOH
+C. Fe(OH)3
+D. Mg(OH)2
+
+[TN] CaO thuộc loại
+*A. Oxide base
+B. Oxide acid
+C. Acid
+D. Muối
+
+[TN] CO2 thuộc loại
+A. Oxide base
+*B. Oxide acid
+C. Base
+D. Muối
+
+[TN] Công thức của iron(III) oxide là
+A. FeO
+*B. Fe2O3
+C. Fe3O4
+D. Fe(OH)3
+
+[TN] Cho CaCO3 vào dung dịch HCl, khí thoát ra là
+A. H2
+B. O2
+*C. CO2
+D. Cl2
+
+[TN] Kim loại nào tác dụng với dung dịch HCl sinh ra khí H2?
+A. Cu
+*B. Zn
+C. Ag
+D. Au
+
+[TN] Khối lượng phân tử của H2SO4 là
+A. 96 amu
+*B. 98 amu
+C. 100 amu
+D. 49 amu
+
+[TN] Dung dịch có pH = 2 có môi trường
+*A. Acid
+B. Base
+C. Trung tính
+D. Không xác định
+
+[TN] Muối nào là thành phần chính của muối ăn?
+*A. NaCl
+B. KCl
+C. CaCO3
+D. Na2SO4
+
+[TN] Chất nào là muối?
+A. HNO3
+B. KOH
+*C. CuSO4
+D. SO3
+
+[TN] Ion tạo nên tính acid là
+*A. H+
+B. OH-
+C. Na+
+D. Cl-
+
+[DS] Về acid và base:
+a) H2SO4 loãng làm quỳ tím hoá đỏ. | Đ
+b) Dung dịch NaOH có pH < 7. | S
+c) HCl có trong dịch vị dạ dày. | Đ
+d) Ca(OH)2 là base không tan. | S
+
+[DS] Phản ứng: Fe + 2HCl -> FeCl2 + H2
+a) Sản phẩm có khí hydrogen. | Đ
+b) FeCl2 là một base. | S
+c) Đây là phản ứng của kim loại với acid. | Đ`;
 let S=defaults();
-function loadS(){const s=jget(KEY);if(s){S=Object.assign(defaults(),s);S.tug=Object.assign(defaults().tug,s.tug);S.pick=Object.assign(defaults().pick,s.pick)}}
+function loadS(){const s=jget(KEY);if(s){S=Object.assign(defaults(),s);S.tug=Object.assign(defaults().tug,s.tug);S.pick=Object.assign(defaults().pick,s.pick);if(S.bank.includes(OLD_MATH_Q))S.bank=S.bank.replace(OLD_MATH_Q,`[TN] Dung dịch nào sau đây làm quỳ tím hoá xanh?
+A. HCl
+B. H2SO4
+*C. NaOH
+D. NaCl`)}}
 let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>jset(KEY,S),150)}
 let BANK=[];
 
@@ -501,7 +621,7 @@ function teacherMain(){
   const lt=jget('lhsn_tab');if(lt){const b=$(`#tabs button[data-t="${lt}"]`);b&&b.click()}
   $('#btnFull').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
   document.addEventListener('click',e=>{const b=e.target.closest('[data-fs]');if(!b)return;const el=$('#'+b.dataset.fs);document.fullscreenElement?document.exitFullscreen():el.requestFullscreen().catch(()=>{})});
-  initLop();initBank();initPick();initTug();
+  initLop();initBank();initPick();initTug();initDrag();
   initSheetTab('thaoluan');initSheetTab('baitap');
   listen();
 }
@@ -553,7 +673,7 @@ function renderScores(){
 function fillGroupSelects(){
   const opts=S.groups.map((g,i)=>`<option value="${i}">${esc(g.name)}</option>`).join('');
   const pg=$('#pickGroup');if(pg){pg.innerHTML=opts;pg.value=S.pick.grp||0}
-  const tp=$('#tugPickTeams');if(tp){let o='<option value="">Chọn từ nhóm…</option>';S.groups.forEach((a,i)=>S.groups.forEach((b,j)=>{if(i<j)o+=`<option value="${i},${j}">${esc(a.name)} – ${esc(b.name)}</option>`}));tp.innerHTML=o}
+  typeof fillWho==='function'&&$('#dgWhoList')&&fillWho();const tp=$('#tugPickTeams');if(tp){let o='<option value="">Chọn từ nhóm…</option>';S.groups.forEach((a,i)=>S.groups.forEach((b,j)=>{if(i<j)o+=`<option value="${i},${j}">${esc(a.name)} – ${esc(b.name)}</option>`}));tp.innerHTML=o}
 }
 
 /* ---------- NGÂN HÀNG CÂU HỎI ---------- */
@@ -592,6 +712,9 @@ function initPick(){
     if(pickCur.isGroup)addScore(null,pickCur.grp,p);else addScore(pickCur.name,pickCur.grp,p);
     p?ding():buzz();if(p>=1)confetti(25);logPick(`${pickCur.name}: ${p?'+'+p:'chưa đúng'}`);stopPickTimer();$('#pickScoreBtns').style.display='none'};
   $('#pickQ').addEventListener('click',e=>{const o=e.target.closest('.opt[data-k]');if(!o||!pickQCur)return;const k=+o.dataset.k;if(k===pickQCur.ans){o.classList.add('right');ding()}else{o.classList.add('wrong');buzz()}});
+  const pb=$('#pickBank'),bt=$('#bankText');pb.value=S.bank;mountFbar($('#pickFbar'),pb);
+  pb.addEventListener('input',()=>{bt.value=pb.value;bt.dispatchEvent(new Event('input'));pickInfo()});
+  bt.addEventListener('input',()=>{if(document.activeElement!==pb)pb.value=bt.value});
   renderPickLog();pickInfo();
 }
 function doPick(){
@@ -629,11 +752,15 @@ function renderPickLog(){$('#pickLog').innerHTML=PLOG.map(x=>`<li>${esc(x)}</li>
 /* ---------- KÉO CO ---------- */
 const TG={pos:0,q:null,lock:{L:false,R:false},running:false,timer:null,score:{L:0,R:0},used:[]};
 function initTug(){
-  const T=S.tug;$('#tugL').value=T.L;$('#tugR').value=T.R;$('#tugTarget').value=T.target;$('#tugSec').value=T.sec;$('#tugBank').checked=T.bank;$('#tugMath').checked=T.math;
+  const T=S.tug;$('#tugL').value=T.L;$('#tugR').value=T.R;$('#tugTarget').value=T.target;$('#tugSec').value=T.sec;$('#tugSrc').value=T.src;
   $('#tugL').oninput=e=>{T.L=e.target.value;save();tugRender()};$('#tugR').oninput=e=>{T.R=e.target.value;save();tugRender()};
   $('#tugTarget').onchange=e=>{T.target=Math.max(2,Math.min(10,+e.target.value||5));e.target.value=T.target;save();tugRender()};
   $('#tugSec').onchange=e=>{T.sec=+e.target.value;save()};
-  $('#tugBank').onchange=e=>{T.bank=e.target.checked;save()};$('#tugMath').onchange=e=>{T.math=e.target.checked;save()};
+  $('#tugSrc').onchange=e=>{T.src=e.target.value;TG.used=[];save();$('#tugCount').textContent=tugPool().length+' lượt hỏi'};
+  const tt=$('#tugText');tt.value=T.qs;mountFbar($('#tugFbar'),tt);
+  const tprev=()=>{const qs=parseQs(T.qs).filter(q=>q.t==='TN'||q.t==='DS');$('#tugPrev').innerHTML=qs.map((q,i)=>qHTML(q,i)).join('')||'<div class="mute">Chưa có câu hỏi.</div>';$('#tugCount').textContent=tugPool().length+' lượt hỏi'};
+  let tpt;tt.addEventListener('input',()=>{T.qs=tt.value;TG.used=[];save();clearTimeout(tpt);tpt=setTimeout(tprev,250)});tprev();
+  $('#btnTugSample').onclick=()=>{if(tt.value.trim()&&!confirm('Thay câu hỏi hiện có bằng câu mẫu Hoá 8?'))return;tt.value=TUG_SAMPLE;tt.dispatchEvent(new Event('input'))};
   $('#tugPickTeams').onchange=e=>{if(!e.target.value)return;const[i,j]=e.target.value.split(',').map(Number);T.L=S.groups[i].name;T.R=S.groups[j].name;$('#tugL').value=T.L;$('#tugR').value=T.R;save();tugRender();e.target.value=''};
   $('#btnTugStart').onclick=()=>{if(Math.abs(TG.pos)>=S.tug.target)tugReset();TG.running=true;tugNext()};
   $('#btnTugNext').onclick=()=>{if(TG.running)tugNext()};
@@ -644,20 +771,15 @@ function initTug(){
     if(e.key in L)tugAnswer('L',L[e.key]);else if(e.key in R)tugAnswer('R',R[e.key]);else if(e.key===' '&&!TG.q){e.preventDefault();tugNext()}});
   tugRender();
 }
+function tugPool(){const pool=[],src=S.tug.src||'own',add=(list,pre)=>list.forEach((q,i)=>{if(q.t==='TN'&&q.ans>=0)pool.push({id:pre+i,q:q.q,opts:q.opts,ans:q.ans});if(q.t==='DS')q.items.forEach((it,k)=>{if(q.ia[k]!=null)pool.push({id:pre+i+'_'+k,q:(q.q?q.q+'\n':'')+it,opts:['Đúng','Sai'],ans:q.ia[k]?0:1})})});
+  if(src!=='bank')add(parseQs(S.tug.qs||''),'k');if(src!=='own')add(BANK,'b');return pool}
 function tugQuestion(){
-  const pool=[];
-  if(S.tug.bank)BANK.forEach((q,i)=>{if(q.t==='TN'&&q.ans>=0)pool.push({id:'b'+i,q:q.q,opts:q.opts,ans:q.ans});if(q.t==='DS')q.items.forEach((it,k)=>{if(q.ia[k]!=null)pool.push({id:'b'+i+'_'+k,q:(q.q?q.q+'\n':'')+it,opts:['Đúng','Sai'],ans:q.ia[k]?0:1})})});
-  const fresh=pool.filter(x=>!TG.used.includes(x.id));
-  if(fresh.length&&(!S.tug.math||Math.random()<.7)){const x=fresh[Math.floor(Math.random()*fresh.length)];TG.used.push(x.id);
-    const order=x.opts.length===2?[0,1]:shuffle(x.opts.map((_,i)=>i));return{q:x.q,opts:order.map(i=>x.opts[i]),ans:order.indexOf(x.ans)}}
-  if(!S.tug.math&&pool.length){TG.used=[];return tugQuestion()}
-  // tính nhanh
-  const r=n=>2+Math.floor(Math.random()*n);let a,b,op,v;const k=Math.floor(Math.random()*4);
-  if(k===0){a=r(60);b=r(40);op='+';v=a+b}else if(k===1){a=r(80)+20;b=r(19);op='−';v=a-b}else if(k===2){a=r(10);b=r(10);op='×';v=a*b}else{b=r(8);v=r(10);a=b*v;op=':'}
-  const s=new Set([v]);while(s.size<4){const d=v+(Math.floor(Math.random()*11)-5)||v+7;if(d>=0)s.add(d)}
-  const opts=shuffle([...s]);return{q:`${a} ${op} ${b} = ?`,opts:opts.map(String),ans:opts.indexOf(v)};
+  const pool=tugPool();if(!pool.length)return null;
+  let fresh=pool.filter(x=>!TG.used.includes(x.id));if(!fresh.length){TG.used=[];fresh=pool}
+  const x=fresh[Math.floor(Math.random()*fresh.length)];TG.used.push(x.id);
+  const order=x.opts.length===2?[0,1]:shuffle(x.opts.map((_,i)=>i));return{q:x.q,opts:order.map(i=>x.opts[i]),ans:order.indexOf(x.ans)};
 }
-function tugNext(){clearInterval(TG.timer);const qq=TG.q=tugQuestion();TG.lock={L:false,R:false};TG.answered=null;tugRender();
+function tugNext(){clearInterval(TG.timer);const qq=TG.q=tugQuestion();if(!qq){TG.running=false;tugRender();$('#tugQ').innerHTML='Chưa có câu hỏi — thầy cô nhập câu hỏi ở khung “✏️ Thầy cô nhập câu hỏi cho Kéo co” bên dưới.';return}TG.lock={L:false,R:false};TG.answered=null;tugRender();
   const sec=S.tug.sec,end=Date.now()+sec*1000;TG.t0=Date.now();
   TG.timer=setInterval(()=>{const left=Math.max(0,end-Date.now());$('#tugT').textContent=Math.ceil(left/1000)+'s';$('#tugTimer i').style.width=(left/sec/10)+'%';$('#tugTimer').classList.toggle('low',left<4000);
     if(!left){clearInterval(TG.timer);buzz();tugReveal(null);$('#tugT').textContent='⏰ Hết giờ — không đội nào kéo được';setTimeout(()=>{if(TG.running&&TG.q===qq)tugNext()},2200)}},150)}
@@ -784,7 +906,7 @@ async function gotMsg(msg){
   const c=CHUNKS[id]=CHUNKS[id]||{n:+n,got:{}};c.got[i]=data;if(Object.keys(c.got).length<c.n)return;
   let packed='';for(let k=0;k<c.n;k++)packed+=c.got[k];delete CHUNKS[id];
   let d;try{d=await unpack(packed)}catch(e){return}
-  if(!d||!d.sid)return;const box=S.subs[d.sid]=S.subs[d.sid]||{};const who=(d.who||'?').trim().toLowerCase();
+  if(!d||!d.sid)return;if(d.kind==='drag')return gotDrag(d);const box=S.subs[d.sid]=S.subs[d.sid]||{};const who=(d.who||'?').trim().toLowerCase();
   if(box[who]&&box[who].t>=d.t)return;const isNew=!box[who];box[who]=d;save();
   const sh=S.sheets.find(s=>s.id===d.sid);
   if(sh){renderSheetList(sh.kind);if(OPEN&&OPEN.id===sh.id)renderSubs();toast(`📥 ${d.who} ${isNew?'vừa nộp':'nộp lại'} “${sh.title}”`)}
@@ -909,9 +1031,177 @@ async function studentMain(){
   if(D.sent)$('#sSend').textContent='📤 Nộp lại';
 }
 
+/* ================================================================
+   TRÒ CHƠI KÉO THẢ – SẮP XẾP NHÓM (thi ai nhanh hơn)
+   ================================================================ */
+const DCOL=['#0ea5e9','#22c55e','#f59e0b','#ef4444','#a855f7','#ec4899'];
+const DRAG_SAMPLE={title:'Phân loại hợp chất vô cơ',groups:[{name:'Oxide',items:['CaO','CO2','Fe2O3','SO2']},{name:'Acid',items:['HCl','H2SO4','HNO3','H3PO4']},{name:'Base',items:['NaOH','Ca(OH)2','Cu(OH)2','KOH']},{name:'Muối',items:['NaCl','CaCO3','CuSO4','KNO3']}]};
+const clock=ms=>{ms=Math.max(0,ms);const m=Math.floor(ms/60000),s=Math.floor(ms/1000)%60,d=Math.floor(ms/100)%10;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+d};
+const secs=ms=>(ms/1000).toFixed(1).replace('.',',')+' giây';
+const PEN=3000;
+// Bảng chơi dùng chung cho máy chiếu và điện thoại
+function dragBoard(root,game,opt){
+  const items=[];game.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>items.push({id:gi+'_'+ii,label:it,g:gi})));
+  let placed={},t0=0,pen=0,wrong=0,timer=null,running=false,sel=null,drag=null;
+  root.innerHTML=`<div class="row" style="justify-content:center;gap:18px"><span class="dtime" data-r="time">00:00.0</span><span class="small mute" data-r="prog"></span></div>
+    <div class="dtray" data-r="tray"><div class="dstart">${esc(opt.hint||'Bấm ▶ Bắt đầu — đồng hồ chạy ngay khi thẻ hiện ra')}</div></div>
+    <div class="dzones">${game.groups.map((g,gi)=>`<div class="dzone" data-z="${gi}" style="--c:${DCOL[gi%DCOL.length]}"><div class="dzl">${fm(g.name)}</div><div class="dzi"></div></div>`).join('')}</div>
+    <div class="row" style="justify-content:center;margin-top:12px" data-r="checkrow"><button class="pri" data-r="check" style="font-size:18px">✅ Kiểm tra</button></div>
+    <div data-r="res"></div>`;
+  const Q=k=>root.querySelector(`[data-r="${k}"]`);
+  const setMode=()=>{Q('checkrow').style.display=opt.instant?'none':''};setMode();
+  const tick=()=>{Q('time').textContent=clock(Date.now()-t0+pen)};
+  const prog=()=>{Q('prog').textContent=`${Object.keys(placed).length}/${items.length} thẻ`+(wrong?` · sai ${wrong} lần (+${wrong*PEN/1000}s)`:'')};
+  const zoneEl=zi=>root.querySelector(`.dzone[data-z="${zi}"] .dzi`);
+  function start(){placed={};pen=0;wrong=0;sel=null;running=true;clearInterval(timer);
+    root.querySelectorAll('.dzi').forEach(z=>z.innerHTML='');Q('res').innerHTML='';
+    Q('tray').innerHTML=shuffle(items).map(it=>`<div class="dcard" data-id="${it.id}">${fm(it.label)}</div>`).join('');
+    t0=Date.now();timer=setInterval(tick,100);tick();prog();beep(660,.1)}
+  function stop(){running=false;clearInterval(timer)}
+  function chip(id,zi,cls){const it=items.find(x=>x.id===id);const c=document.createElement('div');c.className='dchip '+(cls||'');c.dataset.id=id;c.innerHTML=fm(it.label);zoneEl(zi).appendChild(c);return c}
+  function back(id){const it=items.find(x=>x.id===id);delete placed[id];root.querySelector(`.dchip[data-id="${id}"]`)?.remove();
+    if(!Q('tray').querySelector(`[data-id="${id}"]`)){const d=document.createElement('div');d.className='dcard';d.dataset.id=id;d.innerHTML=fm(it.label);Q('tray').appendChild(d)}prog()}
+  function place(id,zi){if(!running)return;const it=items.find(x=>x.id===id);const card=Q('tray').querySelector(`[data-id="${id}"]`);if(!card)return;
+    if(opt.instant){
+      if(it.g===zi){card.remove();chip(id,zi,'ok');placed[id]=zi;beep(988,.07)}
+      else{wrong++;pen+=PEN;buzz();card.classList.add('bad','shake');setTimeout(()=>card.classList.remove('bad','shake'),600);tick()}
+      prog();if(Object.keys(placed).length===items.length)finish();
+    }else{card.remove();chip(id,zi);placed[id]=zi;beep(740,.05);prog()}
+  }
+  function check(){if(!running)return;let bad=[];
+    root.querySelectorAll('.dchip').forEach(c=>{const it=items.find(x=>x.id===c.dataset.id);const ok=it.g===placed[it.id];c.classList.toggle('ok',ok);c.classList.toggle('no',!ok);if(!ok)bad.push(it.id)});
+    if(!bad.length&&Object.keys(placed).length===items.length)return finish();
+    if(bad.length){wrong+=bad.length;pen+=bad.length*PEN;buzz();tick();setTimeout(()=>bad.forEach(back),900)}
+    else toast('Còn '+(items.length-Object.keys(placed).length)+' thẻ chưa xếp');prog()}
+  function finish(){stop();const ms=Date.now()-t0+pen;Q('time').textContent=clock(ms);
+    Q('res').innerHTML=`<div class="done" style="text-align:center;font-size:22px">🎉 Hoàn thành trong <b>${secs(ms)}</b>${wrong?` <span class="small">(sai ${wrong} lần, đã cộng ${wrong*PEN/1000} giây)</span>`:' — không sai lần nào!'}</div>`;
+    ding();confetti(60);opt.onFinish&&opt.onFinish({ms,wrong})}
+  const zoneAt=(x,y)=>{const e=document.elementFromPoint(x,y);return e&&e.closest('.dzone')&&root.contains(e)?e.closest('.dzone'):null};
+  const hl=z=>root.querySelectorAll('.dzone').forEach(d=>d.classList.toggle('over',d===z));
+  root.addEventListener('pointerdown',e=>{const c=e.target.closest('.dcard');if(!c||!running||e.button>0)return;e.preventDefault();
+    drag={c,x:e.clientX,y:e.clientY,moved:false,g:null};try{c.setPointerCapture(e.pointerId)}catch(_){}});
+  root.addEventListener('pointermove',e=>{if(!drag)return;
+    if(!drag.moved){if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;drag.moved=true;drag.g=drag.c.cloneNode(true);drag.g.classList.add('dghost');document.body.appendChild(drag.g);drag.c.style.opacity=.3}
+    drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';hl(zoneAt(e.clientX,e.clientY))});
+  const end=e=>{if(!drag)return;const d=drag;drag=null;
+    if(d.moved){d.g.remove();d.c.style.opacity='';const z=e.type==='pointerup'?zoneAt(e.clientX,e.clientY):null;hl(null);if(z)place(d.c.dataset.id,+z.dataset.z)}
+    else if(e.type==='pointerup'){root.querySelectorAll('.dcard.sel').forEach(x=>{if(x!==d.c)x.classList.remove('sel')});d.c.classList.toggle('sel');sel=d.c.classList.contains('sel')?d.c.dataset.id:null}};
+  root.addEventListener('pointerup',end);root.addEventListener('pointercancel',end);
+  root.addEventListener('click',e=>{if(e.target.closest('[data-r="check"]'))return check();
+    const ch=e.target.closest('.dchip');if(ch&&running&&!opt.instant){back(ch.dataset.id);return}
+    const z=e.target.closest('.dzone');if(z&&sel&&!e.target.closest('.dcard')){const id=sel;sel=null;place(id,+z.dataset.z)}});
+  return{start,stop,setInstant(v){opt.instant=v;setMode()},get running(){return running}};
+}
+function parseDragItems(t){return String(t||'').split(/[,\n;]+/).map(x=>x.trim()).filter(Boolean)}
+let DB=null,dgEditId=null;
+function curDrag(){return S.drag.find(g=>g.id===S.dragCur)||S.drag[0]}
+function initDrag(){
+  if(!S.drag.length){S.drag.push(Object.assign({id:rid(8)},JSON.parse(JSON.stringify(DRAG_SAMPLE))));save()}
+  if(!S.dragCur||!S.drag.some(g=>g.id===S.dragCur))S.dragCur=S.drag[0].id;
+  if(S.dragInstant==null)S.dragInstant=true;
+  const sec=$('#t-keotha');
+  sec.innerHTML=`<div class="card fs" id="dragStage">
+    <div class="row">
+      <select id="dgGame" style="width:auto;max-width:340px"></select>
+      <span class="small mute">Ai đang chơi:</span><input id="dgWho" list="dgWhoList" style="width:190px" placeholder="Tên nhóm / học sinh"><datalist id="dgWhoList"></datalist>
+      <label class="row" style="margin:0;color:var(--ink)"><input type="checkbox" id="dgInstant" style="width:auto"> Báo đúng/sai ngay khi thả</label>
+      <button class="pri" id="dgStart" style="font-size:18px">▶ Bắt đầu</button>
+      <button class="sm ghost" data-fs="dragStage" style="margin-left:auto">⛶</button>
+    </div>
+    <h2 id="dgTitle" style="text-align:center;font-size:clamp(22px,3vw,36px);margin:12px 0 0"></h2>
+    <div class="mute small" style="text-align:center">Kéo từng thẻ thả vào đúng nhóm (hoặc chạm thẻ rồi chạm nhóm). Mỗi lần sai bị cộng thêm 3 giây — nhóm nào xong nhanh nhất thắng!</div>
+    <div id="dgBoard"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>✏️ Thầy cô soạn trò chơi kéo thả</h2>
+      <label>Tên trò chơi</label><input id="dgEdTitle" placeholder="VD: Phân loại oxide – acid – base – muối">
+      <div class="mute small" style="margin-top:8px">Mỗi nhóm là một ô để thả. Gõ các thẻ cách nhau bằng dấu phẩy hoặc xuống dòng. Công thức tự chuyển: H2SO4 → H₂SO₄, Ca(OH)2 → Ca(OH)₂.</div>
+      <div class="fbar" id="dgFbar"></div>
+      <div id="dgEdGroups"></div>
+      <div class="row" style="margin-top:10px"><button class="sm" id="dgAddG">＋ Thêm nhóm</button><span style="margin-left:auto"></span><button class="sm" id="dgNew">📄 Soạn trò mới</button><button class="pri" id="dgSave">💾 Lưu trò chơi</button></div>
+      <h3>Trò chơi đã soạn</h3><div id="dgList"></div>
+    </div>
+    <div>
+      <div class="card"><div class="row"><h2 style="margin:0">🏆 Ai nhanh nhất?</h2><button class="sm" id="dgAward" style="margin-left:auto" title="Top 1: +3, top 2: +2, top 3: +1 điểm thi đua">＋ Thi đua top 3</button><button class="sm ghost" id="dgClear">Xoá bảng</button></div>
+        <div id="dgRank" class="score-list" style="margin-top:8px"></div></div>
+      <div class="card"><h2>📱 Cho các nhóm thi trên điện thoại</h2>
+        <div class="mute small">Gửi link vào Zalo: mỗi nhóm chọn tên nhóm, bấm Bắt đầu và kéo thả trên điện thoại. Xong là thời gian hiện ngay ở bảng “Ai nhanh nhất?”.</div>
+        <button class="pri" id="dgLink" style="margin-top:8px">🔗 Tạo link gửi Zalo</button><div id="dgLinkBox"></div></div>
+    </div>
+  </div>`;
+  $('#dgInstant').checked=S.dragInstant;
+  $('#dgInstant').onchange=e=>{S.dragInstant=e.target.checked;save();DB&&DB.setInstant(S.dragInstant)};
+  $('#dgGame').onchange=e=>{S.dragCur=e.target.value;save();loadDragBoard();renderRank();$('#dgLinkBox').innerHTML=''};
+  $('#dgStart').onclick=()=>{DB.start();$('#dgStart').textContent='↺ Chơi lại'};
+  $('#dgAddG').onclick=()=>{addEdGroup('Nhóm '+($('#dgEdGroups').children.length+1),[])};
+  $('#dgNew').onclick=()=>editDrag(null);
+  $('#dgSave').onclick=saveDrag;
+  $('#dgEdGroups').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(b){if($('#dgEdGroups').children.length<=2)return toast('Cần ít nhất 2 nhóm');b.closest('.gcard').remove()}});
+  $('#dgEdGroups').addEventListener('input',e=>{if(e.target.classList.contains('dgI'))e.target.nextElementSibling.innerHTML=parseDragItems(e.target.value).map(x=>`<span class="chip">${fm(x)}</span>`).join('')});
+  let lastF=null;$('#t-keotha').addEventListener('focusin',e=>{if(e.target.matches('#dgEdGroups input,#dgEdGroups textarea,#dgEdTitle'))lastF=e.target});
+  mountFbar($('#dgFbar'),()=>lastF);
+  $('#dgList').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const g=S.drag.find(x=>x.id===b.dataset.id);if(!g)return;
+    if(b.dataset.a==='play'){S.dragCur=g.id;save();renderDragSelect();loadDragBoard();renderRank();$('#dragStage').scrollIntoView({behavior:'smooth'})}
+    if(b.dataset.a==='edit')editDrag(g);
+    if(b.dataset.a==='del'&&confirm(`Xoá trò “${g.title}”?`)){S.drag=S.drag.filter(x=>x!==g);delete S.dragRes[g.id];if(!S.drag.length)S.drag.push(Object.assign({id:rid(8)},JSON.parse(JSON.stringify(DRAG_SAMPLE))));if(S.dragCur===g.id)S.dragCur=S.drag[0].id;save();renderDragSelect();loadDragBoard();renderRank();renderDragList();if(dgEditId===g.id)editDrag(null)}});
+  $('#dgClear').onclick=()=>{if(confirm('Xoá bảng xếp hạng của trò này?')){delete S.dragRes[curDrag().id];save();renderRank()}};
+  $('#dgAward').onclick=()=>{const r=rankList();if(!r.length)return toast('Chưa có ai hoàn thành');r.slice(0,3).forEach((x,i)=>{const p=3-i;if(S.groups.some(g=>g.name===x.who))addScore(null,x.who,p);else addScore(x.who,groupOf(x.who),p)});toast('Đã cộng điểm thi đua cho top '+Math.min(3,r.length))};
+  $('#dgLink').onclick=async()=>{const g=curDrag();const url=location.origin+location.pathname+'#g='+await pack({v:1,id:g.id,ti:g.title,gr:g.groups.map(x=>({n:x.name,i:x.items})),r:S.room,gs:S.groups.map(x=>x.name)});
+    linkBox($('#dgLinkBox'),url,`🧩 ${g.title}\nThi kéo thả – nhóm nào nhanh nhất!\n👉 Mở link, chọn nhóm rồi bấm Bắt đầu:\n${url}`)};
+  renderDragSelect();loadDragBoard();renderRank();renderDragList();editDrag(null);fillWho();
+}
+function fillWho(){const dl=$('#dgWhoList');if(dl)dl.innerHTML=[...S.groups.map(g=>g.name),...S.students].map(n=>`<option value="${esc(n)}">`).join('')}
+function renderDragSelect(){$('#dgGame').innerHTML=S.drag.map(g=>`<option value="${g.id}">${esc(g.title)}</option>`).join('');$('#dgGame').value=curDrag().id}
+function loadDragBoard(){const g=curDrag();DB&&DB.stop();$('#dgTitle').innerHTML=fm(g.title);$('#dgStart').textContent='▶ Bắt đầu';
+  DB=dragBoard($('#dgBoard'),g,{instant:S.dragInstant,onFinish:r=>{const who=$('#dgWho').value.trim();if(!who){toast('Gõ tên nhóm vào ô “Ai đang chơi” để ghi lên bảng xếp hạng');return}recordDrag(g.id,who,r.ms,r.wrong,'🖥')}})}
+function recordDrag(gid,who,ms,wrong,src){const R=S.dragRes[gid]=S.dragRes[gid]||{};const k=who.trim().toLowerCase();if(!R[k]||ms<R[k].ms)R[k]={who:who.trim(),ms,wrong,t:Date.now(),src};save();if(curDrag().id===gid)renderRank()}
+function gotDrag(d){const g=S.drag.find(x=>x.id===d.sid);recordDrag(d.sid,d.who||'?',+d.ms||0,+d.wrong||0,'📱');if(g)toast(`🏁 ${d.who} xong “${g.title}” trong ${secs(d.ms)}`)}
+function rankList(){return Object.values(S.dragRes[curDrag().id]||{}).sort((a,b)=>a.ms-b.ms)}
+function renderRank(){const r=rankList();$('#dgRank').innerHTML=r.length?r.map((x,i)=>`<div class="r"><span style="font-size:20px;width:28px">${['🥇','🥈','🥉'][i]||i+1+'.'}</span>${esc(x.who)} <span class="small mute" title="${x.src==='📱'?'chơi trên điện thoại':'chơi trên máy chiếu'}">${x.src}${x.wrong?' · sai '+x.wrong:''}</span><b>${secs(x.ms)}</b></div>`).join(''):'<div class="mute small">Chưa có ai hoàn thành.</div>'}
+function renderDragList(){$('#dgList').innerHTML=S.drag.map(g=>`<div class="row" style="border-bottom:1px solid var(--line);padding:6px 0"><div class="grow"><b>${fm(g.title)}</b> <span class="small mute">${g.groups.length} nhóm · ${g.groups.reduce((s,x)=>s+x.items.length,0)} thẻ</span></div><button class="sm pri" data-a="play" data-id="${g.id}">▶ Chơi</button><button class="sm" data-a="edit" data-id="${g.id}">✎ Sửa</button><button class="sm ghost" data-a="del" data-id="${g.id}">🗑</button></div>`).join('')}
+function addEdGroup(name,items){const i=$('#dgEdGroups').children.length;const d=document.createElement('div');d.className='gcard';d.style.cssText=`margin-top:8px;border-left:6px solid ${DCOL[i%DCOL.length]}`;
+  d.innerHTML=`<div class="row" style="flex-wrap:nowrap"><input class="dgN" value="${esc(name)}" placeholder="Tên nhóm, VD: Acid"><button class="sm ghost" data-rm title="Xoá nhóm">✕</button></div><textarea class="dgI" rows="2" placeholder="VD: HCl, H2SO4, HNO3">${esc(items.join(', '))}</textarea><div class="small"></div>`;
+  $('#dgEdGroups').appendChild(d);d.querySelector('.dgI').dispatchEvent(new Event('input',{bubbles:true}))}
+function editDrag(g){dgEditId=g?g.id:null;$('#dgEdTitle').value=g?g.title:'';$('#dgEdGroups').innerHTML='';
+  (g?g.groups:[{name:'Nhóm 1',items:[]},{name:'Nhóm 2',items:[]}]).forEach(x=>addEdGroup(x.name,x.items));
+  $('#dgSave').textContent=g?'💾 Lưu thay đổi':'💾 Lưu trò chơi';if(g)$('#dgEdTitle').scrollIntoView({behavior:'smooth',block:'center'})}
+function saveDrag(){const title=$('#dgEdTitle').value.trim();if(!title){toast('Hãy đặt tên trò chơi');return $('#dgEdTitle').focus()}
+  const groups=[...$('#dgEdGroups').children].map((d,i)=>({name:d.querySelector('.dgN').value.trim()||'Nhóm '+(i+1),items:parseDragItems(d.querySelector('.dgI').value)})).filter(x=>x.items.length);
+  if(groups.length<2)return toast('Cần ít nhất 2 nhóm có thẻ');
+  let g=S.drag.find(x=>x.id===dgEditId);if(g){g.title=title;g.groups=groups}else{g={id:rid(8),title,groups};S.drag.unshift(g)}
+  S.dragCur=g.id;save();renderDragSelect();loadDragBoard();renderRank();renderDragList();editDrag(g);toast('✅ Đã lưu “'+title+'” — bấm ▶ Bắt đầu để chơi');$('#dragStage').scrollIntoView({behavior:'smooth'})}
+function linkBox(box,url,msg){const local=/^(localhost|127\.|\[::1\])/.test(location.hostname)||location.protocol==='file:';
+  box.innerHTML=`<div class="info" style="margin-top:12px"><div class="row"><button class="pri sm" data-c="z">📋 Chép tin nhắn Zalo</button><button class="sm" data-c="l">Chép link</button><button class="sm" data-c="o">Mở thử</button></div>
+  ${local?'<div class="note">Trang đang chạy trên máy (localhost) nên link chỉ mở được trên máy này.</div>':''}
+  <div class="linkbox" style="margin-top:6px">${esc(url)}</div><div class="qr" data-qr style="margin-top:8px"></div></div>`;
+  box.querySelector('[data-c="z"]').onclick=()=>copy(msg);box.querySelector('[data-c="l"]').onclick=()=>copy(url);box.querySelector('[data-c="o"]').onclick=()=>window.open(url,'_blank');
+  const qd=box.querySelector('[data-qr]');if(window.QRCode&&url.length<2200){try{new QRCode(qd,{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.L})}catch(e){qd.remove()}}else qd.remove()}
+
+/* ---------- Học sinh chơi kéo thả trên điện thoại (#g=...) ---------- */
+async function dragStudent(){
+  document.body.classList.add('student');const app=$('#student');let P;
+  try{P=await unpack(location.hash.slice(3))}catch(e){app.innerHTML='<div class="card"><h2>Link bị hỏng</h2><p>Hãy mở lại link thầy cô gửi.</p></div>';return}
+  document.title=P.ti;const DK='lhsn_g_'+P.id,D=jget(DK)||{who:'',best:0};
+  app.innerHTML=`<div class="card"><div class="mute small">🧩 Trò chơi kéo thả · thi xem nhóm nào nhanh nhất</div><h2 style="font-size:22px;margin:4px 0">${fm(P.ti)}</h2>
+    <label>${P.gs&&P.gs.length?'Nhóm của em':'Tên nhóm / tên em'}</label>
+    ${P.gs&&P.gs.length?`<select id="sWho"><option value="">— Chọn nhóm —</option>${P.gs.map(g=>`<option>${esc(g)}</option>`).join('')}</select>`:'<input id="sWho" placeholder="VD: Nhóm 1">'}
+    <div class="mute small" style="margin-top:8px">Kéo thẻ thả vào đúng nhóm (hoặc chạm thẻ rồi chạm nhóm). Sai một lần bị cộng 3 giây.</div>
+    <div class="row" style="margin-top:10px"><button class="pri" id="sGo" style="font-size:18px;padding:10px 24px">▶ Bắt đầu</button><span class="small mute" id="sBest"></span></div></div>
+    <div class="card" id="sBoard"></div><div id="sMsg"></div>`;
+  $('#sWho').value=D.who;const best=()=>{$('#sBest').textContent=D.best?'Kỉ lục của em: '+secs(D.best):''};best();
+  const game={groups:P.gr.map(g=>({name:g.n,items:g.i}))};
+  const B=dragBoard($('#sBoard'),game,{instant:true,hint:'Chọn nhóm rồi bấm ▶ Bắt đầu',onFinish:async r=>{
+    if(!D.best||r.ms<D.best)D.best=r.ms;jset(DK,D);best();$('#sGo').textContent='↺ Chơi lại';
+    $('#sMsg').innerHTML='<div class="info">Đang gửi kết quả cho thầy cô…</div>';
+    try{await sendSub(P.r,{sid:P.id,kind:'drag',sub:rid(10),who:D.who,ms:r.ms,wrong:r.wrong,t:Date.now()});$('#sMsg').innerHTML='<div class="done">✅ Đã gửi kết quả lên bảng xếp hạng của lớp.</div>'}
+    catch(e){$('#sMsg').innerHTML=`<div class="note">Chưa gửi được kết quả (${esc(e.message)}). Hãy báo thời gian ${secs(r.ms)} cho thầy cô.</div>`}}});
+  $('#sGo').onclick=()=>{D.who=$('#sWho').value.trim();if(!D.who){toast('Hãy chọn nhóm trước');return}jset(DK,D);$('#sMsg').innerHTML='';B.start();$('#sBoard').scrollIntoView({behavior:'smooth'})};
+}
+
 /* ============ KHỞI ĐỘNG ============ */
 document.addEventListener('DOMContentLoaded',()=>{
-  if(location.hash.startsWith('#p='))studentMain();else teacherMain();
+  if(location.hash.startsWith('#p='))studentMain();else if(location.hash.startsWith('#g='))dragStudent();else teacherMain();
 });
 </script>
 </body>
