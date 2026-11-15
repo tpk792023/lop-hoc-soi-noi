@@ -230,7 +230,10 @@ body.student #student{display:block}
 .imgbox .rm{position:absolute;top:4px;right:4px;padding:1px 8px;font-size:13px}
 .kidimg{animation:heaveL .7s ease-in-out infinite alternate}
 .ansSecret{transition:filter .2s}
-body.hideans .ansSecret{filter:blur(7px);user-select:none;pointer-events:none}
+body.hideans .ansSecret{display:none!important}
+.maskview{display:none;border:1px solid var(--line);border-radius:10px;padding:4px 10px;max-height:520px;overflow:auto;background:var(--soft)}
+body.hideans .maskview{display:block}
+.maskview .q{background:var(--card)}
 .secretnote{display:none;font-size:13px;font-weight:700;color:var(--warn);background:var(--warnbg);border-radius:8px;padding:4px 10px}
 body.hideans .secretnote{display:inline-block}
 .setbar{gap:6px;margin:6px 0}
@@ -731,7 +734,7 @@ D. NaCl`)}}
 let saveT;function save(){syncCls();clearTimeout(saveT);saveT=setTimeout(()=>jset(KEY,S),150)}
 let BANK=[];
 /* ---------- ẨN ĐÁP ÁN ---------- */
-function applyHideAns(){const h=S.hideAns!==false;document.body.classList.toggle('hideans',h);const b=$('#btnHideAns');if(b){b.textContent=h?'🙈 Đáp án đang ẩn':'👁 Đáp án đang hiện';b.classList.toggle('on',!h)}
+function applyHideAns(){const h=S.hideAns!==false;document.body.classList.toggle('hideans',h);$$('textarea.ansSecret').forEach(t=>t._mask&&t._mask());dragMask();const b=$('#btnHideAns');if(b){b.textContent=h?'🙈 Đáp án đang ẩn':'👁 Đáp án đang hiện';b.classList.toggle('on',!h)}
   $$('.setbar [data-eye]').forEach(x=>x.textContent=h?'👁 Hiện để sửa':'🙈 Ẩn đáp án');
   ['#bankText','#tugText','#t-thaoluan [data-f="qs"]','#t-baitap [data-f="qs"]'].forEach(q=>{const t=$(q);t&&t.dispatchEvent(new Event('input',{bubbles:true}))});
   $$('#dgEdGroups .dgI').forEach(t=>t.dispatchEvent(new Event('input',{bubbles:true})))}
@@ -769,7 +772,13 @@ function openSets(target){if(!S.sets.length)return toast('Chưa có bộ câu h�
 function addSetBar(t,suggest){if(!t||t.dataset.bar)return;t.dataset.bar=1;const bar=document.createElement('div');bar.className='row setbar';
   bar.innerHTML=`<button class="sm" data-sv type="button">💾 Lưu thành bộ</button><button class="sm" data-op type="button">📂 Bộ đã lưu</button><button class="sm" data-eye type="button"></button><span class="secretnote">🙈 Đáp án đang ẩn trên màn hình</span>`;
   t.parentNode.insertBefore(bar,t.previousElementSibling&&t.previousElementSibling.classList.contains('fbar')?t.previousElementSibling:t);
+  const mk=document.createElement('div');mk.className='maskview';t.after(mk);
+  const draw=()=>{if(!document.body.classList.contains('hideans'))return;const qs=parseQs(t.value);mk.innerHTML=qs.length?qs.map((q,i)=>qHTML({...q,err:[]},i,false)).join(''):'<div class="mute small" style="padding:8px">Chưa có câu hỏi.</div>'};
+  let dt;t.addEventListener('input',()=>{clearTimeout(dt);dt=setTimeout(draw,200)});t._mask=draw;draw();
   bar.querySelector('[data-sv]').onclick=()=>saveSet(t.value,typeof suggest==='function'?suggest():suggest);bar.querySelector('[data-op]').onclick=()=>openSets(t);bar.querySelector('[data-eye]').onclick=toggleHideAns}
+function dragMask(){const ed=$('#dgEdGroups');if(!ed)return;let mk=$('#dgMask');if(!mk){mk=document.createElement('div');mk.id='dgMask';mk.className='maskview';ed.after(mk);ed.addEventListener('input',()=>setTimeout(dragMask,150))}
+  if(!document.body.classList.contains('hideans'))return;const gs=[...ed.children].map(d=>({n:d.querySelector('.dgN').value,i:parseDragItems(d.querySelector('.dgI').value)}));
+  mk.innerHTML=`<div style="padding:6px 0"><b>Các nhóm:</b> ${gs.map((g,i)=>`<span class="chip" style="border-color:${DCOL[i%DCOL.length]}">${fm(g.n)}</span>`).join('')}</div><div style="padding:0 0 8px"><b>Các thẻ (đã trộn):</b> ${shuffle(gs.flatMap(g=>g.i)).map(x=>`<span class="chip">${fm(x)}</span>`).join('')}</div>`}
 function initSets(){
   $('#setSearch').oninput=renderSets;
   $('#setList').addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(b)setAction(b.dataset.set,b.dataset.id)});
