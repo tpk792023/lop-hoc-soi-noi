@@ -229,6 +229,20 @@ body.student #student{display:block}
 .imgbox:empty::after{content:"🖼️"}
 .imgbox .rm{position:absolute;top:4px;right:4px;padding:1px 8px;font-size:13px}
 .kidimg{animation:heaveL .7s ease-in-out infinite alternate}
+.ansSecret{transition:filter .2s}
+body.hideans .ansSecret{filter:blur(7px);user-select:none;pointer-events:none}
+.secretnote{display:none;font-size:13px;font-weight:700;color:var(--warn);background:var(--warnbg);border-radius:8px;padding:4px 10px}
+body.hideans .secretnote{display:inline-block}
+.setbar{gap:6px;margin:6px 0}
+#btnHideAns.on{background:var(--warnbg);color:var(--warn);border-color:var(--warn)}
+.setrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:8px 0}
+.setrow .grow b{font-size:16px}
+.dview{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;background:var(--soft)}
+.dview .zg{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-top:6px}
+.dview .zg>div{border-radius:10px;padding:6px;background:var(--card);border-top:4px solid var(--c)}
+.dview .zg b{font-size:13px;color:var(--c)}
+.dview .wr{color:var(--bad);font-size:13px;margin-top:6px}
+.pbar{height:6px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:4px}.pbar i{display:block;height:100%;background:var(--ok)}
 .done{background:var(--okbg);color:var(--ok);border-radius:12px;padding:12px;font-weight:600;margin:12px 0}
 </style>
 </head>
@@ -238,6 +252,7 @@ body.student #student{display:block}
     <div class="brand">🏫 Lớp Học <span>Sôi Nổi</span></div>
     <select id="clsTop" title="Lớp đang dạy" style="width:auto;max-width:170px;font-weight:700"></select>
     <span id="netStatus" class="status">⚪ Chưa nhận bài</span>
+    <button class="sm" id="btnHideAns" title="Ẩn/hiện đáp án trên màn hình giáo viên"></button>
     <button class="sm ghost" id="btnFull" title="Toàn màn hình cho máy chiếu">⛶ Toàn màn hình</button>
   </div>
   <nav class="tabs" id="tabs">
@@ -299,12 +314,18 @@ body.student #student{display:block}
 
 <!-- ===== CÂU HỎI ===== -->
 <section class="tab" id="t-cauhoi">
+  <div class="card">
+    <div class="row"><h2 style="margin:0">📚 Kho bộ câu hỏi đã lưu</h2><span class="mute small" id="setCount"></span>
+      <input id="setSearch" placeholder="🔎 Tìm bộ câu hỏi…" style="width:220px;margin-left:auto"></div>
+    <div class="mute small">Mỗi khung soạn câu hỏi đều có nút <b>💾 Lưu thành bộ</b>. Khi cần, bấm <b>💬 Giao thảo luận</b> hoặc <b>📝 Giao bài tập</b> để tạo link gửi học sinh ngay; bấm <b>📥 Dùng</b> để đưa vào Gọi tên / Kéo co.</div>
+    <div id="setList" style="margin-top:6px"></div>
+  </div>
   <div class="grid2">
     <div class="card">
       <h2>Ngân hàng câu hỏi</h2>
       <div class="mute small">Dùng chung cho Gọi tên, Kéo co và phiếu thảo luận. Gõ công thức bình thường: <b>H2SO4, Fe2(SO4)3, Ca2+, SO42-, x^2, -&gt;</b> sẽ tự thành <b id="demoCv"></b>. Công thức toán phức tạp đặt giữa hai dấu $, ví dụ <code>$\frac{a+b}{2}$</code>.</div>
       <div class="fbar" data-for="bankText"></div>
-      <textarea id="bankText" rows="22" spellcheck="false"></textarea>
+      <textarea class="ansSecret" id="bankText" rows="22" spellcheck="false"></textarea>
       <details style="margin-top:8px"><summary><b>Cách gõ câu hỏi</b></summary>
 <pre class="small" style="white-space:pre-wrap">[TN] Câu trắc nghiệm nhiều lựa chọn   ← đánh dấu * trước đáp án đúng
 A. ...
@@ -370,7 +391,7 @@ b) Phát biểu 2 | S
         <div class="mute small" id="pickInfo" style="margin-top:6px"></div>
         <details style="margin-top:10px"><summary><b>✏️ Nhập / sửa câu hỏi gọi tên</b></summary>
           <div class="mute small">Dùng chung với tab “Câu hỏi”. Xem cách gõ ở tab đó.</div>
-          <div class="fbar" id="pickFbar"></div><textarea id="pickBank" rows="12" spellcheck="false"></textarea></details>
+          <div class="fbar" id="pickFbar"></div><textarea class="ansSecret" id="pickBank" rows="12" spellcheck="false"></textarea></details>
       </div>
       <div class="card">
         <h2>Lượt vừa gọi</h2>
@@ -422,7 +443,7 @@ b) Phát biểu 2 | S
       <div class="row"><h2 style="margin:0">✏️ Thầy cô nhập câu hỏi cho Kéo co</h2><button class="sm" id="btnTugSample" style="margin-left:auto">Nạp câu mẫu Hoá 8</button></div>
       <div class="mute small">Dùng câu trắc nghiệm <b>[TN]</b> (đánh * trước đáp án đúng) và đúng/sai <b>[DS]</b> (mỗi ý a, b… thành một câu Đúng/Sai). Gõ công thức bình thường: H2SO4 → H₂SO₄, Fe3+ → Fe³⁺.</div>
       <div class="fbar" id="tugFbar"></div>
-      <textarea id="tugText" rows="16" spellcheck="false"></textarea>
+      <textarea class="ansSecret" id="tugText" rows="16" spellcheck="false"></textarea>
     </div>
     <div class="card"><div class="row"><h2 style="margin:0">Xem trước</h2><span class="mute small" id="tugCount2" style="margin-left:auto"></span></div><div id="tugPrev" style="max-height:620px;overflow:auto"></div></div>
   </div>
@@ -548,7 +569,7 @@ function parseBlock(tag,lines){
   if(t==='TLN'&&!key.length)err.push('chưa có dòng = đáp án');
   return {t,q:q.join('\n'),opts,ans,items,ia,key:key.join('\n'),err};
 }
-function qHTML(q,i,showAns=true){
+function qHTML(q,i,showAns=!document.body.classList.contains('hideans')){
   let h=`<div class="q"><div><span class="tag">${i!=null?'Câu '+(i+1)+' · ':''}${TYPE_NAME[q.t]}</span></div><div class="stem">${fm(q.q)}</div>`;
   if(q.t==='TN')h+=`<div class="opts">${q.opts.map((o,k)=>`<div class="opt ${showAns&&k===q.ans?'right':''}"><b>${String.fromCharCode(65+k)}.</b> ${fm(o)}</div>`).join('')}</div>`;
   if(q.t==='DS')h+=q.items.map((o,k)=>`<div class="small" style="margin-top:4px"><b>${String.fromCharCode(97+k)})</b> ${fm(o)} ${showAns&&q.ia[k]!=null?`<b class="${q.ia[k]?'ok':'bad'}">→ ${q.ia[k]?'Đúng':'Sai'}</b>`:''}</div>`).join('');
@@ -612,7 +633,7 @@ D. NaCl
 [TL] Giải thích vì sao khi mở nắp chai nước ngọt lại thấy bọt khí thoát ra.
 = Áp suất trong chai giảm nên độ tan của khí CO2 giảm, CO2 thoát ra ngoài.`;
 function defaults(){return{classes:[],cls:'',students:[],groups:[],bank:SAMPLE,scores:{stu:{},grp:{}},room:'lhsn-'+rid(20),sheets:[],subs:{},grade:{},
-  tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,src:'own',qs:TUG_SAMPLE},drag:[],dragRes:{},dragCur:'',
+  tug:{L:'Đội Xanh',R:'Đội Đỏ',target:5,sec:20,src:'own',qs:TUG_SAMPLE},drag:[],dragRes:{},dragView:{},sets:[],dragCur:'',
   pick:{style:'wheel',mode:'hs',norep:true,called:[],qtype:'all',qorder:'rand',sec:30,qi:0,grp:''}}}
 const OLD_MATH_Q=`[TN] Nghiệm của phương trình x^2 - 4 = 0 là
 A. x = 4
@@ -709,6 +730,52 @@ B. H2SO4
 D. NaCl`)}}
 let saveT;function save(){syncCls();clearTimeout(saveT);saveT=setTimeout(()=>jset(KEY,S),150)}
 let BANK=[];
+/* ---------- ẨN ĐÁP ÁN ---------- */
+function applyHideAns(){const h=S.hideAns!==false;document.body.classList.toggle('hideans',h);const b=$('#btnHideAns');if(b){b.textContent=h?'🙈 Đáp án đang ẩn':'👁 Đáp án đang hiện';b.classList.toggle('on',!h)}
+  $$('.setbar [data-eye]').forEach(x=>x.textContent=h?'👁 Hiện để sửa':'🙈 Ẩn đáp án');
+  ['#bankText','#tugText','#t-thaoluan [data-f="qs"]','#t-baitap [data-f="qs"]'].forEach(q=>{const t=$(q);t&&t.dispatchEvent(new Event('input',{bubbles:true}))});
+  $$('#dgEdGroups .dgI').forEach(t=>t.dispatchEvent(new Event('input',{bubbles:true})))}
+function toggleHideAns(){S.hideAns=!(S.hideAns!==false);save();applyHideAns()}
+/* ---------- KHO BỘ CÂU HỎI ---------- */
+function setStats(text){const qs=parseQs(text);const c={};qs.forEach(q=>c[q.t]=(c[q.t]||0)+1);return qs.length+' câu'+(qs.length?' · '+Object.entries(c).map(([k,v])=>TYPE_NAME[k]+' '+v).join(', '):'')}
+function saveSet(text,suggest){text=String(text||'').trim();if(!text)return toast('Khung đang trống, chưa có gì để lưu');
+  const name=prompt('Đặt tên bộ câu hỏi (VD: Hoá 8 – Bài 9 Base):',suggest||'');if(!name||!name.trim())return;
+  const ex=S.sets.find(x=>x.name.toLowerCase()===name.trim().toLowerCase());
+  if(ex){if(!confirm(`Đã có bộ “${ex.name}”. Ghi đè?`))return;ex.text=text;ex.t=Date.now()}else S.sets.unshift({id:rid(8),name:name.trim(),text,t:Date.now()});
+  save();renderSets();toast('✅ Đã lưu bộ “'+name.trim()+'”')}
+function setRowHTML(x,target){return `<div class="setrow"><div class="grow"><b>${esc(x.name)}</b><div class="small mute">${setStats(x.text)} · lưu ${fmtTime(x.t)}</div></div>
+  ${target?`<button class="sm pri" data-set="use" data-id="${x.id}">📥 Dùng ở đây</button><button class="sm" data-set="add" data-id="${x.id}">＋ Thêm vào</button>`:
+  `<button class="sm" data-set="bank" data-id="${x.id}" title="Đưa vào ngân hàng (Gọi tên)">📥 Gọi tên</button><button class="sm" data-set="tug" data-id="${x.id}">📥 Kéo co</button>`}
+  <button class="sm pri" data-set="tl" data-id="${x.id}">💬 Giao thảo luận</button><button class="sm pri" data-set="bt" data-id="${x.id}">📝 Giao bài tập</button>
+  ${target?'':`<button class="sm ghost" data-set="ren" data-id="${x.id}" title="Đổi tên">✎</button><button class="sm ghost" data-set="del" data-id="${x.id}" title="Xoá">🗑</button>`}</div>`}
+function renderSets(){const box=$('#setList');if(!box)return;const f=($('#setSearch').value||'').toLowerCase();const list=S.sets.filter(x=>!f||x.name.toLowerCase().includes(f));
+  $('#setCount').textContent=S.sets.length+' bộ';box.innerHTML=list.length?list.map(x=>setRowHTML(x)).join(''):'<div class="mute small" style="padding:8px 0">Chưa có bộ nào. Soạn câu hỏi rồi bấm “💾 Lưu thành bộ”.</div>'}
+function fillTa(t,text,mode){t.value=mode==='add'&&t.value.trim()?t.value.trim()+'\n\n'+text:text;t.dispatchEvent(new Event('input',{bubbles:true}))}
+function assignSet(x,kind){const tab=kind==='bt'?'baitap':'thaoluan';$(`#tabs button[data-t="${tab}"]`).click();const sec=$('#t-'+tab);
+  sec.querySelector('[data-f="title"]').value=x.name;sec.querySelector('[data-f="title"]').dispatchEvent(new Event('input',{bubbles:true}));
+  fillTa(sec.querySelector('[data-f="qs"]'),x.text);sec.querySelector('[data-act="make"]').click();window.scrollTo({top:0,behavior:'smooth'});toast('✅ Đã tạo link “'+x.name+'” — bấm 📋 Chép tin nhắn Zalo để gửi')}
+function setAction(a,id,target){const x=S.sets.find(y=>y.id===id);if(!x)return;
+  if(a==='use'||a==='add'){fillTa(target,x.text,a);toast('Đã đưa bộ “'+x.name+'” vào khung')}
+  if(a==='bank'){fillTa($('#bankText'),x.text,confirm('Thay ngân hàng câu hỏi (Gọi tên) bằng bộ này?\nBấm Huỷ để THÊM vào cuối.')?'use':'add');toast('Đã đưa vào ngân hàng câu hỏi')}
+  if(a==='tug'){fillTa($('#tugText'),x.text,confirm('Thay câu hỏi Kéo co bằng bộ này?\nBấm Huỷ để THÊM vào cuối.')?'use':'add');toast('Đã đưa vào câu hỏi Kéo co')}
+  if(a==='tl'||a==='bt')assignSet(x,a);
+  if(a==='ren'){const n=prompt('Tên mới:',x.name);if(n&&n.trim()){x.name=n.trim();save();renderSets()}}
+  if(a==='del'&&confirm(`Xoá bộ “${x.name}”?`)){S.sets=S.sets.filter(y=>y!==x);save();renderSets()}}
+function openSets(target){if(!S.sets.length)return toast('Chưa có bộ câu hỏi nào được lưu');
+  const ov=document.createElement('div');ov.className='overlay';ov.innerHTML=`<div class="modal" style="max-width:900px"><button class="x sm" data-x>✕</button><h2>📂 Bộ câu hỏi đã lưu</h2><input placeholder="🔎 Tìm…" data-q style="max-width:300px"><div data-l></div></div>`;
+  document.body.appendChild(ov);const draw=()=>{const f=ov.querySelector('[data-q]').value.toLowerCase();ov.querySelector('[data-l]').innerHTML=S.sets.filter(x=>!f||x.name.toLowerCase().includes(f)).map(x=>setRowHTML(x,true)).join('')};draw();
+  ov.querySelector('[data-q]').oninput=draw;
+  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))return ov.remove();const b=e.target.closest('[data-set]');if(!b)return;ov.remove();setAction(b.dataset.set,b.dataset.id,target)})}
+function addSetBar(t,suggest){if(!t||t.dataset.bar)return;t.dataset.bar=1;const bar=document.createElement('div');bar.className='row setbar';
+  bar.innerHTML=`<button class="sm" data-sv type="button">💾 Lưu thành bộ</button><button class="sm" data-op type="button">📂 Bộ đã lưu</button><button class="sm" data-eye type="button"></button><span class="secretnote">🙈 Đáp án đang ẩn trên màn hình</span>`;
+  t.parentNode.insertBefore(bar,t.previousElementSibling&&t.previousElementSibling.classList.contains('fbar')?t.previousElementSibling:t);
+  bar.querySelector('[data-sv]').onclick=()=>saveSet(t.value,typeof suggest==='function'?suggest():suggest);bar.querySelector('[data-op]').onclick=()=>openSets(t);bar.querySelector('[data-eye]').onclick=toggleHideAns}
+function initSets(){
+  $('#setSearch').oninput=renderSets;
+  $('#setList').addEventListener('click',e=>{const b=e.target.closest('[data-set]');if(b)setAction(b.dataset.set,b.dataset.id)});
+  addSetBar($('#bankText'),'');addSetBar($('#tugText'),'Kéo co – ');addSetBar($('#pickBank'),'');
+  ['thaoluan','baitap'].forEach(k=>{const sec=$('#t-'+k);addSetBar(sec.querySelector('[data-f="qs"]'),()=>sec.querySelector('[data-f="title"]').value)});
+  $('#btnHideAns').onclick=toggleHideAns;renderSets();applyHideAns()}
 function newCls(name){return{id:rid(6),name,students:[],groups:[],scores:{stu:{},grp:{}},called:[]}}
 function curCls(){return S.classes.find(c=>c.id===S.cls)}
 function syncCls(){const c=curCls();if(c){c.students=S.students;c.groups=S.groups;c.scores=S.scores;c.called=S.pick.called}}
@@ -778,6 +845,7 @@ function teacherMain(){
   document.addEventListener('click',e=>{const b=e.target.closest('[data-fs]');if(!b)return;const el=$('#'+b.dataset.fs);document.fullscreenElement?document.exitFullscreen():el.requestFullscreen().catch(()=>{})});
   initLop();initBank();initPick();initTug();initDrag();
   initSheetTab('thaoluan');initSheetTab('baitap');
+  initSets();
   listen();
 }
 
@@ -1204,7 +1272,7 @@ function initSheetTab(kind){
     <label>${isBT?'Yêu cầu / lời dặn':'Nhiệm vụ của nhóm'}</label><textarea data-f="note" rows="3" placeholder="${isBT?'VD: Làm vào vở rồi nhập đáp án, câu tự luận gõ ngắn gọn.':'VD: Các nhóm đọc SGK trang 45, quan sát thí nghiệm rồi hoàn thành phiếu.'}"></textarea>
     <div class="row" style="margin-top:10px"><label style="margin:0">Câu hỏi (gõ giống tab “Câu hỏi”)</label><button class="sm" data-act="frombank" style="margin-left:auto">＋ Lấy từ ngân hàng</button></div>
     <div class="fbar"></div>
-    <textarea data-f="qs" rows="12" spellcheck="false" placeholder="[TL] Nêu hiện tượng khi nhỏ dung dịch HCl vào đá vôi CaCO3.&#10;&#10;[TN] ...&#10;A. ...&#10;*B. ..."></textarea>
+    <textarea class="ansSecret" data-f="qs" rows="12" spellcheck="false" placeholder="[TL] Nêu hiện tượng khi nhỏ dung dịch HCl vào đá vôi CaCO3.&#10;&#10;[TN] ...&#10;A. ...&#10;*B. ..."></textarea>
     <div class="row" style="margin-top:10px"><button class="pri" data-act="make" style="font-size:17px">🔗 Tạo link gửi Zalo</button><span class="mute small" data-out="cnt"></span></div>
     <div data-out="link"></div>
     <details style="margin-top:10px"><summary class="small"><b>Xem trước câu hỏi</b></summary><div data-out="prev"></div></details>
@@ -1428,7 +1496,7 @@ const PEN=3000;
 // Bảng chơi dùng chung cho máy chiếu và điện thoại
 function dragBoard(root,game,opt){
   const items=[];game.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>items.push({id:gi+'_'+ii,label:it,g:gi})));
-  let placed={},t0=0,pen=0,wrong=0,timer=null,running=false,sel=null,drag=null;
+  let wrongs=[],placed={},t0=0,pen=0,wrong=0,timer=null,running=false,sel=null,drag=null;
   root.innerHTML=`<div class="row" style="justify-content:center;gap:18px"><span class="dtime" data-r="time">00:00.0</span><span class="small mute" data-r="prog"></span></div>
     <div class="dtray" data-r="tray"><div class="dstart">${esc(opt.hint||'Bấm ▶ Bắt đầu — đồng hồ chạy ngay khi thẻ hiện ra')}</div></div>
     <div class="dzones">${game.groups.map((g,gi)=>`<div class="dzone" data-z="${gi}" style="--c:${DCOL[gi%DCOL.length]}"><div class="dzl">${fm(g.name)}</div><div class="dzi"></div></div>`).join('')}</div>
@@ -1438,11 +1506,12 @@ function dragBoard(root,game,opt){
   const setMode=()=>{Q('checkrow').style.display=opt.instant?'none':''};setMode();
   const tick=()=>{Q('time').textContent=clock(Date.now()-t0+pen)};
   const prog=()=>{Q('prog').textContent=`${Object.keys(placed).length}/${items.length} thẻ`+(wrong?` · sai ${wrong} lần (+${wrong*PEN/1000}s)`:'')};
+  const emit=()=>{opt.onChange&&opt.onChange({placed:{...placed},wrongs:wrongs.slice(),ms:Date.now()-t0+pen,wrong})};
   const zoneEl=zi=>root.querySelector(`.dzone[data-z="${zi}"] .dzi`);
-  function start(){placed={};pen=0;wrong=0;sel=null;running=true;clearInterval(timer);
+  function start(){placed={};pen=0;wrong=0;wrongs=[];sel=null;running=true;clearInterval(timer);
     root.querySelectorAll('.dzi').forEach(z=>z.innerHTML='');Q('res').innerHTML='';
     Q('tray').innerHTML=shuffle(items).map(it=>`<div class="dcard" data-id="${it.id}">${fm(it.label)}</div>`).join('');
-    t0=Date.now();timer=setInterval(tick,100);tick();prog();beep(660,.1)}
+    t0=Date.now();timer=setInterval(tick,100);tick();prog();beep(660,.1);emit()}
   function stop(){running=false;clearInterval(timer)}
   function chip(id,zi,cls){const it=items.find(x=>x.id===id);const c=document.createElement('div');c.className='dchip '+(cls||'');c.dataset.id=id;c.innerHTML=fm(it.label);zoneEl(zi).appendChild(c);return c}
   function back(id){const it=items.find(x=>x.id===id);delete placed[id];root.querySelector(`.dchip[data-id="${id}"]`)?.remove();
@@ -1450,18 +1519,18 @@ function dragBoard(root,game,opt){
   function place(id,zi){if(!running)return;const it=items.find(x=>x.id===id);const card=Q('tray').querySelector(`[data-id="${id}"]`);if(!card)return;
     if(opt.instant){
       if(it.g===zi){card.remove();chip(id,zi,'ok');placed[id]=zi;beep(988,.07)}
-      else{wrong++;pen+=PEN;buzz();card.classList.add('bad','shake');setTimeout(()=>card.classList.remove('bad','shake'),600);tick()}
-      prog();if(Object.keys(placed).length===items.length)finish();
-    }else{card.remove();chip(id,zi);placed[id]=zi;beep(740,.05);prog()}
+      else{wrong++;pen+=PEN;wrongs.push([id,zi]);emit();buzz();card.classList.add('bad','shake');setTimeout(()=>card.classList.remove('bad','shake'),600);tick()}
+      prog();if(Object.keys(placed).length===items.length)finish();else emit();
+    }else{card.remove();chip(id,zi);placed[id]=zi;beep(740,.05);prog();emit()}
   }
   function check(){if(!running)return;let bad=[];
     root.querySelectorAll('.dchip').forEach(c=>{const it=items.find(x=>x.id===c.dataset.id);const ok=it.g===placed[it.id];c.classList.toggle('ok',ok);c.classList.toggle('no',!ok);if(!ok)bad.push(it.id)});
     if(!bad.length&&Object.keys(placed).length===items.length)return finish();
-    if(bad.length){wrong+=bad.length;pen+=bad.length*PEN;buzz();tick();setTimeout(()=>bad.forEach(back),900)}
+    if(bad.length){bad.forEach(i=>wrongs.push([i,placed[i]]));emit();wrong+=bad.length;pen+=bad.length*PEN;buzz();tick();setTimeout(()=>bad.forEach(back),900)}
     else toast('Còn '+(items.length-Object.keys(placed).length)+' thẻ chưa xếp');prog()}
   function finish(){stop();const ms=Date.now()-t0+pen;Q('time').textContent=clock(ms);
     Q('res').innerHTML=`<div class="done" style="text-align:center;font-size:22px">🎉 Hoàn thành trong <b>${secs(ms)}</b>${wrong?` <span class="small">(sai ${wrong} lần, đã cộng ${wrong*PEN/1000} giây)</span>`:' — không sai lần nào!'}</div>`;
-    ding();confetti(60);opt.onFinish&&opt.onFinish({ms,wrong})}
+    ding();confetti(60);opt.onFinish&&opt.onFinish({ms,wrong,placed:{...placed},wrongs:wrongs.slice()})}
   const zoneAt=(x,y)=>{const e=document.elementFromPoint(x,y);return e&&e.closest('.dzone')&&root.contains(e)?e.closest('.dzone'):null};
   const hl=z=>root.querySelectorAll('.dzone').forEach(d=>d.classList.toggle('over',d===z));
   root.addEventListener('pointerdown',e=>{const c=e.target.closest('.dcard');if(!c||!running||e.button>0)return;e.preventDefault();
@@ -1504,13 +1573,14 @@ function initDrag(){
       <label>Tên trò chơi</label><input id="dgEdTitle" placeholder="VD: Phân loại oxide – acid – base – muối">
       <div class="mute small" style="margin-top:8px">Mỗi nhóm là một ô để thả. Gõ các thẻ cách nhau bằng dấu phẩy hoặc xuống dòng. Công thức tự chuyển: H2SO4 → H₂SO₄, Ca(OH)2 → Ca(OH)₂.</div>
       <div class="fbar" id="dgFbar"></div>
-      <div id="dgEdGroups"></div>
+      <div id="dgEdGroups" class="ansSecret"></div>
       <div class="row" style="margin-top:10px"><button class="sm" id="dgAddG">＋ Thêm nhóm</button><span style="margin-left:auto"></span><button class="sm" id="dgNew">📄 Soạn trò mới</button><button class="pri" id="dgSave">💾 Lưu trò chơi</button></div>
       <h3>Trò chơi đã soạn</h3><div id="dgList"></div>
     </div>
     <div>
       <div class="card"><div class="row"><h2 style="margin:0">🏆 Ai nhanh nhất?</h2><button class="sm" id="dgAward" style="margin-left:auto" title="Top 1: +3, top 2: +2, top 3: +1 điểm thi đua">＋ Thi đua top 3</button><button class="sm ghost" id="dgClear">Xoá bảng</button></div>
         <div id="dgRank" class="score-list" style="margin-top:8px"></div></div>
+      <div class="card"><div class="row"><h2 style="margin:0">👀 Bài làm của các nhóm</h2><button class="sm ghost" id="dgViewClear" style="margin-left:auto">Xoá</button></div><div id="dgView" style="margin-top:6px;max-height:640px;overflow:auto"></div></div>
       <div class="card"><h2>📱 Cho các nhóm thi trên điện thoại</h2>
         <div class="mute small">Gửi link vào Zalo: mỗi nhóm chọn tên nhóm, bấm Bắt đầu và kéo thả trên điện thoại. Xong là thời gian hiện ngay ở bảng “Ai nhanh nhất?”.</div>
         <button class="pri" id="dgLink" style="margin-top:8px">🔗 Tạo link gửi Zalo</button><div id="dgLinkBox"></div></div>
@@ -1518,7 +1588,7 @@ function initDrag(){
   </div>`;
   $('#dgInstant').checked=S.dragInstant;
   $('#dgInstant').onchange=e=>{S.dragInstant=e.target.checked;save();DB&&DB.setInstant(S.dragInstant)};
-  $('#dgGame').onchange=e=>{S.dragCur=e.target.value;save();loadDragBoard();renderRank();$('#dgLinkBox').innerHTML=''};
+  $('#dgGame').onchange=e=>{S.dragCur=e.target.value;save();loadDragBoard();renderRank();renderDragView();$('#dgLinkBox').innerHTML=''};
   $('#dgStart').onclick=()=>{DB.start();$('#dgStart').textContent='↺ Chơi lại'};
   $('#dgAddG').onclick=()=>{addEdGroup('Nhóm '+($('#dgEdGroups').children.length+1),[])};
   $('#dgNew').onclick=()=>editDrag(null);
@@ -1532,17 +1602,33 @@ function initDrag(){
     if(b.dataset.a==='edit')editDrag(g);
     if(b.dataset.a==='del'&&confirm(`Xoá trò “${g.title}”?`)){S.drag=S.drag.filter(x=>x!==g);delete S.dragRes[g.id];if(!S.drag.length)S.drag.push(Object.assign({id:rid(8)},JSON.parse(JSON.stringify(DRAG_SAMPLE))));if(S.dragCur===g.id)S.dragCur=S.drag[0].id;save();renderDragSelect();loadDragBoard();renderRank();renderDragList();if(dgEditId===g.id)editDrag(null)}});
   $('#dgClear').onclick=()=>{if(confirm('Xoá bảng xếp hạng của trò này?')){delete S.dragRes[curDrag().id];save();renderRank()}};
+  $('#dgViewClear').onclick=()=>{if(confirm('Xoá bài làm đang hiện của trò này?')){delete S.dragView[curDrag().id];save();renderDragView()}};
+  $('#dgView').addEventListener('click',e=>{const b=e.target.closest('[data-big]');if(!b)return;const g=curDrag();const v=Object.values(S.dragView[g.id]||{}).find(x=>x.who===b.dataset.big);if(!v)return;
+    const ov=document.createElement('div');ov.className='overlay';ov.innerHTML=`<div class="modal fs" style="max-width:1300px"><button class="x sm" data-x>✕</button><h2>${fm(g.title)}</h2>${dragViewHTML(g,v,true)}</div>`;document.body.appendChild(ov);
+    ov.onclick=ev=>{if(ev.target===ov||ev.target.closest('[data-x]'))ov.remove()}});
   $('#dgAward').onclick=()=>{const r=rankList();if(!r.length)return toast('Chưa có ai hoàn thành');r.slice(0,3).forEach((x,i)=>{const p=3-i;if(S.groups.some(g=>g.name===x.who))addScore(null,x.who,p);else addScore(x.who,groupOf(x.who),p)});toast('Đã cộng điểm thi đua cho top '+Math.min(3,r.length))};
   $('#dgLink').onclick=async()=>{const g=curDrag();const url=location.origin+location.pathname+'#g='+await pack({v:1,id:g.id,ti:g.title,gr:g.groups.map(x=>({n:x.name,i:x.items})),r:S.room,gs:S.groups.map(x=>x.name)});
     linkBox($('#dgLinkBox'),url,`🧩 ${g.title}\nThi kéo thả – nhóm nào nhanh nhất!\n👉 Mở link, chọn nhóm rồi bấm Bắt đầu:\n${url}`)};
-  renderDragSelect();loadDragBoard();renderRank();renderDragList();editDrag(null);fillWho();
+  renderDragSelect();loadDragBoard();renderRank();renderDragList();editDrag(null);fillWho();renderDragView();
 }
 function fillWho(){const dl=$('#dgWhoList');if(dl)dl.innerHTML=[...S.groups.map(g=>g.name),...S.students].map(n=>`<option value="${esc(n)}">`).join('')}
 function renderDragSelect(){$('#dgGame').innerHTML=S.drag.map(g=>`<option value="${g.id}">${esc(g.title)}</option>`).join('');$('#dgGame').value=curDrag().id}
 function loadDragBoard(){const g=curDrag();DB&&DB.stop();$('#dgTitle').innerHTML=fm(g.title);$('#dgStart').textContent='▶ Bắt đầu';
-  DB=dragBoard($('#dgBoard'),g,{instant:S.dragInstant,onFinish:r=>{const who=$('#dgWho').value.trim();if(!who){toast('Gõ tên nhóm vào ô “Ai đang chơi” để ghi lên bảng xếp hạng');return}recordDrag(g.id,who,r.ms,r.wrong,'🖥')}})}
+  DB=dragBoard($('#dgBoard'),g,{instant:S.dragInstant,onFinish:r=>{const who=$('#dgWho').value.trim();if(!who){toast('Gõ tên nhóm vào ô “Ai đang chơi” để ghi lên bảng xếp hạng');return}recordDrag(g.id,who,r.ms,r.wrong,'🖥');setDragView(g.id,{who,st:'done',ms:r.ms,wrong:r.wrong,placed:r.placed,wrongs:r.wrongs,t:Date.now(),src:'🖥'})}})}
 function recordDrag(gid,who,ms,wrong,src){const R=S.dragRes[gid]=S.dragRes[gid]||{};const k=who.trim().toLowerCase();if(!R[k]||ms<R[k].ms)R[k]={who:who.trim(),ms,wrong,t:Date.now(),src};save();if(curDrag().id===gid)renderRank()}
-function gotDrag(d){const g=S.drag.find(x=>x.id===d.sid);recordDrag(d.sid,d.who||'?',+d.ms||0,+d.wrong||0,'📱');if(g)toast(`🏁 ${d.who} xong “${g.title}” trong ${secs(d.ms)}`)}
+function gotDrag(d){const g=S.drag.find(x=>x.id===d.sid);const st=d.st||'done';
+  if(!setDragView(d.sid,{who:d.who||'?',st,ms:+d.ms||0,wrong:+d.wrong||0,placed:d.placed||{},wrongs:d.wrongs||[],t:d.t,src:'📱'}))return;
+  if(st==='done'){recordDrag(d.sid,d.who||'?',+d.ms||0,+d.wrong||0,'📱');if(g)toast(`🏁 ${d.who} xong “${g.title}” trong ${secs(d.ms)}`)}}
+function setDragView(gid,v){const V=S.dragView[gid]=S.dragView[gid]||{};const k=v.who.trim().toLowerCase();if(V[k]&&V[k].t>v.t)return false;V[k]=v;save();if(curDrag().id===gid)renderDragView();return true}
+function dragViewHTML(g,v,big){const lab=id=>{const[a,b]=String(id).split('_').map(Number);return g.groups[a]&&g.groups[a].items[b]!=null?g.groups[a].items[b]:'?'};
+  const total=g.groups.reduce((s,x)=>s+x.items.length,0),n=Object.keys(v.placed||{}).length;
+  return `<div class="dview" ${big?'style="font-size:20px"':''}><div class="row"><b style="font-size:${big?28:17}px">${esc(v.who)}</b><span class="small mute">${v.src||''}</span>
+    <span style="margin-left:auto" class="small">${v.st==='done'?`<b class="ok">✅ Xong ${secs(v.ms)}</b>`:`⏳ Đang làm ${n}/${total}`}${v.wrong?` · <b class="bad">sai ${v.wrong}</b>`:''}</span>${big?'':`<button class="sm" data-big="${esc(v.who)}">🖥 Xem to</button>`}</div>
+    <div class="pbar"><i style="width:${total?n/total*100:0}%"></i></div>
+    <div class="zg">${g.groups.map((gr,gi)=>`<div style="--c:${DCOL[gi%DCOL.length]}"><b style="font-size:${big?20:13}px">${fm(gr.name)}</b><div>${Object.entries(v.placed||{}).filter(([,z])=>z===gi).map(([id])=>{const ok=+String(id).split('_')[0]===gi;return `<span class="chip" style="cursor:default;${ok?'':'border-color:var(--bad);color:var(--bad)'}${big?';font-size:20px':''}">${fm(lab(id))}</span>`}).join('')||'<span class="small mute">—</span>'}</div></div>`).join('')}</div>
+    ${(v.wrongs||[]).length?`<div class="wr">✗ Đã thả sai: ${v.wrongs.map(([id,z])=>`${fm(lab(id))} → ${fm((g.groups[z]||{}).name||'?')}`).join(' · ')}</div>`:''}</div>`}
+function renderDragView(){const box=$('#dgView');if(!box)return;const g=curDrag();const V=Object.values(S.dragView[g.id]||{}).sort((a,b)=>(a.st==='done')-(b.st==='done')||a.ms-b.ms);
+  box.innerHTML=V.length?V.map(v=>dragViewHTML(g,v)).join(''):'<div class="mute small">Chưa có nhóm nào làm. Khi các nhóm chơi qua link, bài làm hiện ở đây (cập nhật vài giây một lần).</div>'}
 function rankList(){return Object.values(S.dragRes[curDrag().id]||{}).sort((a,b)=>a.ms-b.ms)}
 function renderRank(){const r=rankList();$('#dgRank').innerHTML=r.length?r.map((x,i)=>`<div class="r"><span style="font-size:20px;width:28px">${['🥇','🥈','🥉'][i]||i+1+'.'}</span>${esc(x.who)} <span class="small mute" title="${x.src==='📱'?'chơi trên điện thoại':'chơi trên máy chiếu'}">${x.src}${x.wrong?' · sai '+x.wrong:''}</span><b>${secs(x.ms)}</b></div>`).join(''):'<div class="mute small">Chưa có ai hoàn thành.</div>'}
 function renderDragList(){$('#dgList').innerHTML=S.drag.map(g=>`<div class="row" style="border-bottom:1px solid var(--line);padding:6px 0"><div class="grow"><b>${fm(g.title)}</b> <span class="small mute">${g.groups.length} nhóm · ${g.groups.reduce((s,x)=>s+x.items.length,0)} thẻ</span></div><button class="sm pri" data-a="play" data-id="${g.id}">▶ Chơi</button><button class="sm" data-a="edit" data-id="${g.id}">✎ Sửa</button><button class="sm ghost" data-a="del" data-id="${g.id}">🗑</button></div>`).join('')}
@@ -1577,10 +1663,12 @@ async function dragStudent(){
     <div class="card" id="sBoard"></div><div id="sMsg"></div>`;
   $('#sWho').value=D.who;const best=()=>{$('#sBest').textContent=D.best?'Kỉ lục của em: '+secs(D.best):''};best();
   const game={groups:P.gr.map(g=>({name:g.n,items:g.i}))};
-  const B=dragBoard($('#sBoard'),game,{instant:true,hint:'Chọn nhóm rồi bấm ▶ Bắt đầu',onFinish:async r=>{
+  let lv=null,lvBusy=false;const liveSend=st=>{lv=st;if(lvBusy)return;lvBusy=true;(async()=>{while(lv){const x=lv;lv=null;if(x.fin)break;
+      try{await sendSub(P.r,{sid:P.id,kind:'drag',st:'live',sub:rid(10),who:D.who,ms:x.ms,wrong:x.wrong,placed:x.placed,wrongs:x.wrongs,t:Date.now()})}catch(e){}await new Promise(r=>setTimeout(r,5000))}lvBusy=false})()};
+  const B=dragBoard($('#sBoard'),game,{instant:true,onChange:liveSend,hint:'Chọn nhóm rồi bấm ▶ Bắt đầu',onFinish:async r=>{
     if(!D.best||r.ms<D.best)D.best=r.ms;jset(DK,D);best();$('#sGo').textContent='↺ Chơi lại';
     $('#sMsg').innerHTML='<div class="info">Đang gửi kết quả cho thầy cô…</div>';
-    try{await sendSub(P.r,{sid:P.id,kind:'drag',sub:rid(10),who:D.who,ms:r.ms,wrong:r.wrong,t:Date.now()});$('#sMsg').innerHTML='<div class="done">✅ Đã gửi kết quả lên bảng xếp hạng của lớp.</div>'}
+    lv={fin:1};try{await sendSub(P.r,{sid:P.id,kind:'drag',st:'done',sub:rid(10),who:D.who,ms:r.ms,wrong:r.wrong,placed:r.placed,wrongs:r.wrongs,t:Date.now()});$('#sMsg').innerHTML='<div class="done">✅ Đã gửi kết quả lên bảng xếp hạng của lớp.</div>'}
     catch(e){$('#sMsg').innerHTML=`<div class="note">Chưa gửi được kết quả (${esc(e.message)}). Hãy báo thời gian ${secs(r.ms)} cho thầy cô.</div>`}}});
   $('#sGo').onclick=()=>{D.who=$('#sWho').value.trim();if(!D.who){toast('Hãy chọn nhóm trước');return}jset(DK,D);$('#sMsg').innerHTML='';B.start();$('#sBoard').scrollIntoView({behavior:'smooth'})};
 }
