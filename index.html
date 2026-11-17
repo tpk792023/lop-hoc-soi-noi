@@ -845,6 +845,17 @@ function openClsImport(){
 }
 
 
+/* Nạp bộ câu hỏi Kéo co từ link #kc=… (nút trong bài giảng PowerPoint) */
+async function importKC(){if(!location.hash.startsWith('#kc='))return;
+  try{const o=await unpack(location.hash.slice(4));const name=String(o.n||'Bộ câu hỏi kéo co').trim(),text=String(o.q||'');if(!text.trim())return;
+    const ex=S.sets.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(ex){ex.text=text;ex.t=Date.now()}else S.sets.unshift({id:rid(8),name,text,t:Date.now()});
+    S.tug.qs=text;S.tug.src='own';const ta=$('#tugText');ta&&fillTa(ta,text,'use');save();
+    typeof renderSets==='function'&&$('#setList')&&renderSets();
+    const b=$('#tabs button[data-t="keoco"]');b&&b.click();
+    toast('Đã nạp '+parseQs(text).length+' câu hỏi Kéo co: '+name,4000)}
+  catch(e){toast('Link câu hỏi bị hỏng: '+e.message,4000)}
+  history.replaceState(null,'',location.pathname+location.search)}
 function teacherMain(){
   loadS();initClasses();
   // tabs
@@ -854,6 +865,7 @@ function teacherMain(){
   document.addEventListener('click',e=>{const b=e.target.closest('[data-fs]');if(!b)return;const el=$('#'+b.dataset.fs);document.fullscreenElement?document.exitFullscreen():el.requestFullscreen().catch(()=>{})});
   initLop();initBank();initPick();initTug();initDrag();
   initSheetTab('thaoluan');initSheetTab('baitap');
+  importKC();window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#kc='))importKC()});
   initSets();
   listen();
 }
