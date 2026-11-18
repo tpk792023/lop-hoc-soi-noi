@@ -846,16 +846,27 @@ function openClsImport(){
 
 
 /* Nạp bộ câu hỏi Kéo co từ link #kc=… (nút trong bài giảng PowerPoint) */
+function kcLoad(name,text){
+  const ex=S.sets.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(ex){ex.text=text;ex.t=Date.now()}else S.sets.unshift({id:rid(8),name,text,t:Date.now()});
+  S.tug.qs=text;S.tug.src='own';const ta=$('#tugText');ta&&fillTa(ta,text,'use');save();
+  typeof renderSets==='function'&&$('#setList')&&renderSets();
+  const b=$('#tabs button[data-t="keoco"]');b&&b.click();
+  toast('Đã nạp '+parseQs(text).length+' câu hỏi Kéo co: '+name,4000)}
 async function importKC(){if(!location.hash.startsWith('#kc='))return;
-  try{const o=await unpack(location.hash.slice(4));const name=String(o.n||'Bộ câu hỏi kéo co').trim(),text=String(o.q||'');if(!text.trim())return;
-    const ex=S.sets.find(x=>x.name.toLowerCase()===name.toLowerCase());
-    if(ex){ex.text=text;ex.t=Date.now()}else S.sets.unshift({id:rid(8),name,text,t:Date.now()});
-    S.tug.qs=text;S.tug.src='own';const ta=$('#tugText');ta&&fillTa(ta,text,'use');save();
-    typeof renderSets==='function'&&$('#setList')&&renderSets();
-    const b=$('#tabs button[data-t="keoco"]');b&&b.click();
-    toast('Đã nạp '+parseQs(text).length+' câu hỏi Kéo co: '+name,4000)}
+  try{const o=await unpack(location.hash.slice(4));const name=String(o.n||'Bộ câu hỏi kéo co').trim(),text=String(o.q||'');if(!text.trim())return;kcLoad(name,text)}
   catch(e){toast('Link câu hỏi bị hỏng: '+e.message,4000)}
   history.replaceState(null,'',location.pathname+location.search)}
+/* Link ngắn #kcf=<tên>: nạp bộ câu hỏi (và hình 2 đội nếu có) từ file bo/<tên>.json trên trang — dùng cho nút trong PowerPoint vì PowerPoint bỏ link quá dài */
+async function importKCF(){if(!location.hash.startsWith('#kcf='))return;const id=location.hash.slice(5).replace(/[^\w-]/g,'');
+  history.replaceState(null,'',location.pathname+location.search);if(!id)return;
+  try{const r=await fetch('bo/'+id+'.json',{cache:'no-cache'});if(!r.ok)throw new Error('không tìm thấy bộ “'+id+'”');const o=await r.json();
+    if(o.img){const IM=jget('lhsn_tugimg')||{};
+      for(const k of ['both','L','R']){const f=String(o.img[k]||'').replace(/[^\w.-]/g,'');if(!f)continue;
+        try{const b=await (await fetch('bo/'+f)).blob();IM[k]=await shrinkImage(new File([b],f,{type:b.type}))}catch(e){}}
+      try{localStorage.setItem('lhsn_tugimg',JSON.stringify(IM))}catch(e){}renderImgSlots()}
+    const text=String(o.q||'');if(text.trim())kcLoad(String(o.n||id).trim(),text)}
+  catch(e){toast('Không nạp được bộ câu hỏi: '+e.message,4000)}}
 function teacherMain(){
   loadS();initClasses();
   // tabs
@@ -865,7 +876,7 @@ function teacherMain(){
   document.addEventListener('click',e=>{const b=e.target.closest('[data-fs]');if(!b)return;const el=$('#'+b.dataset.fs);document.fullscreenElement?document.exitFullscreen():el.requestFullscreen().catch(()=>{})});
   initLop();initBank();initPick();initTug();initDrag();
   initSheetTab('thaoluan');initSheetTab('baitap');
-  importKC();window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#kc='))importKC()});
+  importKC();importKCF();window.addEventListener('hashchange',()=>{if(location.hash.startsWith('#kc='))importKC();if(location.hash.startsWith('#kcf='))importKCF()});
   initSets();
   listen();
 }
