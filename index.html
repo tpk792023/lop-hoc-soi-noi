@@ -1194,9 +1194,14 @@ function tugClockShow(){const s=Math.ceil(TG.left/1000);$('#tgClock').textConten
 function tugScore(){$('#tgLScore').textContent=TG.score.L;$('#tgRScore').textContent=TG.score.R}
 function tugRope(){const r=$('#tgRope'),t=S.tug.target,p=Math.max(-t,Math.min(t,TG.pos));if(r)r.style.transform=`translateX(${p*G_DIST/t}px)`}
 function qFont(t){const n=String(t).length;return n<35?'clamp(26px,3.6vw,64px)':n<70?'clamp(22px,2.9vw,48px)':n<130?'clamp(18px,2.2vw,36px)':'clamp(15px,1.6vw,26px)'}
+/* Cỡ chữ đáp án: ô nhỏ hơn khung câu hỏi nên chữ nhỏ hơn; sau đó tugFit() thu nhỏ tiếp cho vừa trọn ô */
+function oFont(t){const n=String(t).length;return n<20?'clamp(22px,2.6vw,44px)':n<45?'clamp(17px,1.9vw,30px)':n<90?'clamp(14px,1.45vw,23px)':'clamp(12px,1.15vw,19px)'}
+function tugFit(root){requestAnimationFrame(()=>{root.querySelectorAll('.tgopt,.tgq').forEach(el=>{let f=parseFloat(getComputedStyle(el).fontSize),i=0;
+  while(el.scrollHeight>el.clientHeight+1&&f>11&&i++<40){f-=1;el.style.fontSize=f+'px'}})})}
+window.addEventListener('resize',()=>{const g=$('#tugGame');if(g&&!g.hidden)['L','R'].forEach(s=>{const el=$('#tgSide'+s);if(el){el.querySelectorAll('.tgopt').forEach(b=>b.style.fontSize=oFont(b.textContent));tugFit(el)}})});
 function tugSameQ(){const q=tugQuestion();TG.round=false;['L','R'].forEach(s=>{$('#tgSide'+s).classList.remove('frozen');tugNextQ(s,q)})}
 function tugNextQ(s,q0){const q=TG.q[s]=q0||tugQuestion();TG.busy[s]=false;$('#tgSide'+s).classList.remove('frozen');
-  $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${qFont(q.q)}">${fm(q.q)}</div><div class="tgopts ${q.opts.length<=2?'two':''}">${q.opts.map((o,i)=>`<button class="tgopt" data-k="${i}" style="font-size:${qFont(o).replace('64px','44px')}"><kbd>${TKEYS[s][i]?.toUpperCase()||''}</kbd>${fm(o)}</button>`).join('')}</div>`}
+  $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${qFont(q.q)}">${fm(q.q)}</div><div class="tgopts ${q.opts.length<=2?'two':''}">${q.opts.map((o,i)=>`<button class="tgopt" data-k="${i}" style="font-size:${oFont(o)}"><kbd>${TKEYS[s][i]?.toUpperCase()||''}</kbd>${fm(o)}</button>`).join('')}</div>`;tugFit($('#tgSide'+s))}
 function tugAnswer(s,k){if(TG.mode!=='one'||!TG.run||TG.paused||TG.busy[s])return;const q=TG.q[s];if(!q||k>=q.opts.length)return;TG.busy[s]=true;
   const btns=$$('#tgSide'+s+' .tgopt'),same=S.tug.play==='same',o=s==='L'?'R':'L';
   if(same){if(TG.round){TG.busy[s]=false;return}
@@ -1222,10 +1227,16 @@ async function tugSend(o){try{await fetch(RELAY+TG.topic,{method:'POST',body:'TU
 async function tugPhoneSetup(){
   TG.topic='lhsn-tug-'+rid(16);TG.dev={};TG.g='';
   const pool=tugPool().map(x=>({q:x.q,o:x.opts,a:x.ans}));
-  for(const s of ['L','R'])TG.links[s]=location.origin+location.pathname+'#t='+await pack({v:1,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L,p:pool});
+  /* Link ngắn cho mã QR: bộ câu hỏi gửi lên kênh ntfy (lưu 12 giờ), link chỉ chứa mã phòng. Không gửi được thì nhúng câu hỏi vào link như cũ. */
+  let short=false;
+  try{const z=await pack(pool),parts=[];for(let i=0;i<z.length;i+=3000)parts.push(z.slice(i,i+3000));
+    for(let i=0;i<parts.length;i++){const r=await fetch(RELAY+TG.topic,{method:'POST',body:'POOL|'+i+'|'+parts.length+'|'+parts[i]});if(!r.ok)throw 0}
+    short=true}catch(e){}
+  for(const s of ['L','R']){const base={v:2,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L};if(!short)base.p=pool;
+    TG.links[s]=location.origin+location.pathname+'#t='+await pack(base)}
   ['L','R'].forEach(s=>{const el=$('#tgSide'+s);el.innerHTML=`<div class="tgq" style="font-size:clamp(20px,2.4vw,36px);flex:0 0 auto">📱 ${esc(s==='L'?S.tug.L:S.tug.R)} quét mã</div>
     <div class="tgqr"><div data-qr></div></div><div class="tgjoin" data-join>Chưa có máy nào vào</div><button class="tgb" data-tg="copy">📋 Chép link gửi Zalo cho đội</button>`;
-    const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:240,height:240,correctLevel:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
+    const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:280,height:280,correctLevel:TG.links[s].length<600?QRCode.CorrectLevel.M:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
   tugCover(`<div class="tgbig">Hai đội quét mã QR</div><div>Mỗi đội dùng điện thoại quét mã ở phía đội mình (nhiều máy cùng đội cũng được). Khi các máy đã vào, bấm Bắt đầu.</div><button class="bigplay two" data-tg="start">▶ Bắt đầu</button>`);
   if(TG.es)TG.es.close();
   TG.es=new EventSource(RELAY+TG.topic+'/sse');
@@ -1241,12 +1252,19 @@ function tugPhoneMsg(d){
 function tugJoined(){['L','R'].forEach(s=>{const n=Object.values(TG.dev).filter(v=>v.s===s).length;const el=$('#tgSide'+s+' [data-join]');if(el)el.textContent=n?`✅ ${n} máy đã vào`:'Chưa có máy nào vào'})}
 function tugPhoneSide(s,qi){if(TG.mode!=='two')return;const P=tugPool();const q=qi!=null?P[qi]:null;
   $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${q?qFont(q.q):'clamp(22px,2.6vw,40px)'}">${q?fm(q.q):'📱 Đội đang trả lời trên điện thoại…'}</div>
-   <div class="tgopts ${q&&q.opts.length<=2?'two':''}">${q?q.opts.map(o=>`<div class="tgopt" style="font-size:${qFont(o).replace('64px','44px')}">${fm(o)}</div>`).join(''):''}</div><div class="tgjoin" data-join></div>`;tugJoined()}
+   <div class="tgopts ${q&&q.opts.length<=2?'two':''}">${q?q.opts.map(o=>`<div class="tgopt" style="font-size:${oFont(o)}">${fm(o)}</div>`).join(''):''}</div><div class="tgjoin" data-join></div>`;tugJoined();tugFit($('#tgSide'+s))}
 
 /* ----- Màn hình điện thoại của đội (#t=...) ----- */
 async function tugPhone(){
   document.body.classList.add('student');const app=$('#student');let P;
   try{P=await unpack(location.hash.slice(3))}catch(e){app.innerHTML='<div class="card"><h2>Link bị hỏng</h2><p>Hãy quét lại mã QR trên máy chiếu.</p></div>';return}
+  if(!P.p){app.innerHTML='<div class="card"><h2>⏳ Đang tải câu hỏi…</h2></div>';
+    for(let tries=0;tries<6&&!P.p;tries++){try{const r=await fetch(RELAY+P.r+'/json?poll=1&since=all');const txt=await r.text();const got={};let n=0;
+        for(const line of txt.split('\n')){if(!line.trim())continue;let m;try{m=JSON.parse(line)}catch(_){continue}const t=m.message||'';if(!t.startsWith('POOL|'))continue;
+          const [,i,c,...d]=t.split('|');if(+i===0&&Object.keys(got).length)for(const k in got)delete got[k];got[+i]=d.join('|');n=+c}
+        if(n&&Object.keys(got).length===n)P.p=await unpack(Array.from({length:n},(_,i)=>got[i]).join(''))}catch(e){}
+      if(!P.p)await new Promise(r=>setTimeout(r,1500))}
+    if(!P.p){app.innerHTML='<div class="card"><h2>Chưa tải được câu hỏi</h2><p>Kiểm tra mạng rồi quét lại mã QR trên máy chiếu.</p></div>';return}}
   const L=P.s==='L',col=L?'#2563eb':'#dc2626';document.title='Kéo co – '+P.n;
   const id=rid(8);let g='',ok=0,no=0,q=null,qi=null,left=0,run=false,paused=false,timer=null,used=[],busy=false;
   app.innerHTML=`<div class="tph" style="background:${col}"><div style="font-size:14px;opacity:.85">💪 Kéo co · đội ${L?'🔵 trái':'🔴 phải'}</div><div style="font-size:26px;font-weight:800">${esc(P.n)}</div>
