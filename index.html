@@ -858,8 +858,9 @@ async function importKC(){if(!location.hash.startsWith('#kc='))return;
   catch(e){toast('Link câu hỏi bị hỏng: '+e.message,4000)}
   history.replaceState(null,'',location.pathname+location.search)}
 /* Link ngắn #kcf=<tên>: nạp bộ câu hỏi (và hình 2 đội nếu có) từ file bo/<tên>.json trên trang — dùng cho nút trong PowerPoint vì PowerPoint bỏ link quá dài */
-async function importKCF(){if(!location.hash.startsWith('#kcf='))return;const id=location.hash.slice(5).replace(/[^\w-]/g,'');
-  history.replaceState(null,'',location.pathname+location.search);if(!id)return;
+async function importKCF(){const qp=new URLSearchParams(location.search).get('kcf');if(!location.hash.startsWith('#kcf=')&&!qp)return;
+  const id=(location.hash.startsWith('#kcf=')?location.hash.slice(5):qp).replace(/[^\w-]/g,'');
+  history.replaceState(null,'',location.pathname);if(!id)return;
   try{const r=await fetch('bo/'+id+'.json',{cache:'no-cache'});if(!r.ok)throw new Error('không tìm thấy bộ “'+id+'”');const o=await r.json();
     if(o.img){const IM=jget('lhsn_tugimg')||{};
       for(const k of ['both','L','R']){const f=String(o.img[k]||'').replace(/[^\w.-]/g,'');if(!f)continue;
