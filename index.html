@@ -1151,7 +1151,7 @@ function initTug(){
   initTugMedia();
   const modeUI=()=>{const m=S.tug.play||'def';$$('#tugModes .modecard').forEach(b=>b.classList.toggle('on',b.dataset.play===m));
     $('#tugTargetLbl').textContent=m==='goal'?'Số câu đúng để thắng':'Số bước thắng';
-    $('#tugModeNote').textContent=m==='same'?'(Khi 2 đội chơi trên điện thoại, mỗi đội vẫn có câu hỏi riêng.)':''};
+    $('#tugModeNote').textContent='(Chơi trên 2 điện thoại: hai đội luôn trả lời chung 1 câu hỏi.)'};
   $('#tugModes').onclick=e=>{const b=e.target.closest('[data-play]');if(!b)return;S.tug.play=b.dataset.play;save();modeUI()};modeUI();
   $('#tgMusic').onclick=()=>{S.tug.music=!S.tug.music;save();$('#tugMusicOn').checked=S.tug.music;if(S.tug.music&&TG.run&&!TG.paused)musicStart();else musicStop();$('#tgMusic').style.opacity=S.tug.music?1:.5};
   $('#btnTugOne').onclick=()=>tugOpen('one');$('#btnTugTwo').onclick=()=>tugOpen('two');
@@ -1223,7 +1223,7 @@ function tugAct(a,s){if(a==='start')tugStart();if(a==='again')tugOpen(TG.mode);i
 function tugStart(){
   TG.run=true;TG.paused=false;TG.pos=0;TG.score={L:0,R:0};TG.used=[];TG.left=S.tug.sec*1000;TG.winner=null;tugScore();tugRope();tugCover('');
   if(TG.mode==='one'){if(S.tug.play==='same')tugSameQ();else{tugNextQ('L');tugNextQ('R')}}
-  else{TG.g=rid(6);TG.dev={};tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target});['L','R'].forEach(s=>tugPhoneSide(s))}
+  else{TG.g=rid(6);TG.dev={};TG.rd=0;TG.rdDone=false;tugNewRound(true);tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target,qi:TG.qi,rd:TG.rd})}
   beep(523,.12);setTimeout(()=>beep(784,.2),140);musicStop();setTimeout(musicStart,350);
   let last=Date.now();clearInterval(TG.timer);
   TG.timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(TG.paused||!TG.run)return;const before=Math.ceil(TG.left/1000);TG.left=Math.max(0,TG.left-dt);tugClockShow();
@@ -1282,7 +1282,7 @@ async function tugPhoneSetup(){
   ['L','R'].forEach(s=>{const el=$('#tgSide'+s);el.innerHTML=`<div class="tgq" style="font-size:clamp(20px,2.4vw,36px);flex:0 0 auto">📱 ${esc(s==='L'?S.tug.L:S.tug.R)} quét mã</div>
     <div class="tgqr"><div data-qr></div></div><div class="tgjoin" data-join>Chưa có máy nào vào</div><button class="tgb" data-tg="copy">📋 Chép link gửi Zalo cho đội</button>`;
     const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:280,height:280,correctLevel:TG.links[s].length<600?QRCode.CorrectLevel.M:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
-  tugCover(`<div class="tgbig">Hai đội quét mã QR</div><div>Mỗi đội dùng điện thoại quét mã ở phía đội mình (nhiều máy cùng đội cũng được). Khi các máy đã vào, bấm Bắt đầu.</div><button class="bigplay two" data-tg="start">▶ Bắt đầu</button>`);
+  tugCover(`<div class="tgbig">Hai đội quét mã QR</div><div>Mỗi đội dùng điện thoại quét mã ở phía đội mình (nhiều máy cùng đội cũng được). Khi các máy đã vào, bấm Bắt đầu.</div>${(/^(localhost|127\.|\[::1\])/.test(location.hostname)||location.protocol==='file:')?'<div class="note">⚠️ Trang đang mở trên máy này (file hoặc localhost) nên điện thoại không mở được mã QR. Hãy mở trang đã đưa lên mạng (ví dụ GitHub Pages) rồi bấm lại.</div>':''}<button class="bigplay two" data-tg="start">▶ Bắt đầu</button>`);
   if(TG.es)TG.es.close();
   TG.es=new EventSource(RELAY+TG.topic+'/sse');
   TG.es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}tugPhoneMsg(d)};
@@ -1290,14 +1290,24 @@ async function tugPhoneSetup(){
 function tugPhoneMsg(d){
   if(d.e!=='st'||!d.id||!(d.s==='L'||d.s==='R'))return;
   let dev=TG.dev[d.id];const isNew=!dev;if(!dev)dev=TG.dev[d.id]={s:d.s,ok:0,g:''};
-  if(TG.run&&d.g!==TG.g){if(isNew||dev.g!==TG.g){dev.g='';tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target})}tugJoined();return}
-  if(TG.run&&d.g===TG.g){if(dev.g!==TG.g){dev.g=TG.g;dev.ok=0}const delta=(+d.ok||0)-dev.ok;dev.ok=+d.ok||0;dev.q=d.q;
-    if(delta>0){ding();tugPull(d.s,delta)}tugPhoneSide(d.s,d.q)}
+  if(TG.run&&d.g!==TG.g){if(isNew||dev.g!==TG.g){dev.g='';tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target,qi:TG.rdDone?null:TG.qi,rd:TG.rdDone?null:TG.rd})}tugJoined();return}
+  if(TG.run&&d.g===TG.g&&!d.ev&&d.rd!==TG.rd&&!TG.rdDone){const now=Date.now();if(!TG.qsent||now-TG.qsent>1500){TG.qsent=now;tugSend({e:'q',g:TG.g,qi:TG.qi,rd:TG.rd})}}
+  if(TG.run&&d.g===TG.g){ /* 2 đội luôn trả lời chung 1 câu: đội đúng trước kéo dây, rồi cả hai chuyển câu mới; đội sai bị đóng băng */
+    const nm=s=>s==='L'?S.tug.L:S.tug.R;
+    if(d.ev==='win'&&d.rd===TG.rd&&!TG.rdDone&&!TG.frz[d.s]){TG.rdDone=true;ding();tugPull(d.s,1);tugReveal();tugRoundMsg('✅ '+nm(d.s)+' trả lời đúng trước, +1');setTimeout(()=>{if(TG.run)tugNewRound()},1800)}
+    else if(d.ev==='frz'&&d.rd===TG.rd&&!TG.rdDone){TG.frz[d.s]=true;tugRoundMsg('❄️ '+nm(d.s)+' trả lời sai, bị đóng băng');if(TG.frz.L&&TG.frz.R){TG.rdDone=true;tugReveal();setTimeout(()=>{if(TG.run)tugNewRound()},1800)}}
+    tugJoined();return}
   tugJoined()}
+function tugNewRound(quiet){TG.rd=(TG.rd||0)+1;TG.rdDone=false;TG.frz={L:false,R:false};
+  const P=tugPool(),fresh=P.map((_,i)=>i).filter(i=>!TG.used.includes(i));const c=fresh.length?fresh:P.map((_,i)=>i);if(!fresh.length)TG.used=[];
+  TG.qi=c[Math.floor(Math.random()*c.length)];TG.used.push(TG.qi);
+  if(!quiet)tugSend({e:'q',g:TG.g,qi:TG.qi,rd:TG.rd});tugRoundMsg('');['L','R'].forEach(s=>tugPhoneSide(s,TG.qi))}
+function tugReveal(){const q=tugPool()[TG.qi];if(q)['L','R'].forEach(s=>$$('#tgSide'+s+' .tgopt')[q.ans]?.classList.add('ok'))}
+function tugRoundMsg(t){['L','R'].forEach(s=>{const el=$('#tgSide'+s+' [data-round]');if(el)el.textContent=t})}
 function tugJoined(){['L','R'].forEach(s=>{const n=Object.values(TG.dev).filter(v=>v.s===s).length;const el=$('#tgSide'+s+' [data-join]');if(el)el.textContent=n?`✅ ${n} máy đã vào`:'Chưa có máy nào vào'})}
 function tugPhoneSide(s,qi){if(TG.mode!=='two')return;const P=tugPool();const q=qi!=null?P[qi]:null;
   $('#tgSide'+s).innerHTML=`<div class="tgq" style="font-size:${q?qFont(q.q):'clamp(22px,2.6vw,40px)'}">${q?fm(q.q):'📱 Đội đang trả lời trên điện thoại…'}</div>
-   <div class="tgopts ${q&&q.opts.length<=2?'two':''}">${q?q.opts.map(o=>`<div class="tgopt" style="font-size:${oFont(o)}">${fm(o)}</div>`).join(''):''}</div><div class="tgjoin" data-join></div>`;tugJoined();tugFit($('#tgSide'+s))}
+   <div class="tgopts ${q&&q.opts.length<=2?'two':''}">${q?q.opts.map(o=>`<div class="tgopt" style="font-size:${oFont(o)}">${fm(o)}</div>`).join(''):''}</div><div class="tgjoin" data-round></div><div class="tgjoin" data-join></div>`;tugJoined();tugFit($('#tgSide'+s))}
 
 /* ----- Màn hình điện thoại của đội (#t=...) ----- */
 async function tugPhone(){
@@ -1317,25 +1327,28 @@ async function tugPhone(){
     <div id="tpBody"><div class="dstart">⏳ Chờ thầy cô bấm <b>Bắt đầu</b> trên máy chiếu…<div class="small" id="tpNet" style="margin-top:8px">Đang kết nối…</div></div></div>`;
   let sending=false,dirty=false;
   async function push(){if(sending){dirty=true;return}sending=true;dirty=false;
-    try{const r=await fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi})});if(!r.ok)dirty=true}catch(e){dirty=true}
+    try{const r=await fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd})});if(!r.ok)dirty=true}catch(e){dirty=true}
     sending=false;if(dirty)setTimeout(push,r429())}
   const r429=()=>800;
-  function nextQ(){const fresh=P.p.map((_,i)=>i).filter(i=>!used.includes(i));let c=fresh.length?fresh:P.p.map((_,i)=>i);if(!fresh.length)used=[];
-    qi=c[Math.floor(Math.random()*c.length)];used.push(qi);q=P.p[qi];busy=false;
-    const order=q.o.length===2?[0,1]:shuffle(q.o.map((_,i)=>i));q._ord=order;
-    $('#tpBody').innerHTML=`<div class="tpq">${fm(q.q)}</div><div class="tpopts">${order.map((oi,k)=>`<button class="tpopt" data-k="${oi}" style="border-color:${col}">${fm(q.o[oi])}</button>`).join('')}</div>`;push()}
+  let rd=-1;
+  /* câu hỏi do máy chiếu gửi xuống, cả hai đội nhận cùng một câu */
+  function showQ(i){qi=i;q=P.p[i];if(!q)return;busy=false;
+    const order=q.o.length===2?[0,1]:shuffle(q.o.map((_,k)=>k));
+    $('#tpBody').innerHTML=(paused?'<div class="note" id="tpPause">⏸ Thầy cô đang tạm dừng</div>':'')+`<div class="tpq">${fm(q.q)}</div><div class="tpopts">${order.map(oi=>`<button class="tpopt" data-k="${oi}" style="border-color:${col}">${fm(q.o[oi])}</button>`).join('')}</div>`;push()}
+  function sendEv(ev){fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd,ev})}).catch(()=>{})}
   function tick(){$('#tpClock').textContent='⏰ '+Math.floor(Math.ceil(left/1000)/60)+':'+String(Math.ceil(left/1000)%60).padStart(2,'0')}
   function start(d){g=d.g;ok=0;no=0;used=[];left=d.ms;run=true;paused=false;$('#tpOk').textContent=0;clearInterval(timer);let last=Date.now();
-    timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(!run||paused)return;left=Math.max(0,left-dt);tick();if(!left){run=false;clearInterval(timer)}},250);tick();beep(784,.15);nextQ()}
-  $('#tpBody').addEventListener('click',e=>{const b=e.target.closest('.tpopt');if(!b||!run||paused||busy)return;busy=true;const k=+b.dataset.k;
-    if(k===q.a){b.classList.add('ok');ok++;$('#tpOk').textContent=ok;beep(988,.1);if(navigator.vibrate)navigator.vibrate(40);setTimeout(()=>{if(run)nextQ()},450)}
-    else{no++;b.classList.add('no');$$('#tpBody .tpopt').forEach(x=>{if(+x.dataset.k===q.a)x.classList.add('ok')});buzz();if(navigator.vibrate)navigator.vibrate([60,40,60]);setTimeout(()=>{if(run)nextQ()},1300)}
+    timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(!run||paused)return;left=Math.max(0,left-dt);tick();if(!left){run=false;clearInterval(timer)}},250);tick();beep(784,.15);rd=-1;$('#tpBody').innerHTML='<div class="dstart">⏳ Đang chờ câu hỏi…</div>'}
+  $('#tpBody').addEventListener('click',e=>{const b=e.target.closest('.tpopt');if(!b||!run||paused||busy||!q)return;busy=true;const k=+b.dataset.k;
+    if(k===q.a){b.classList.add('ok');ok++;$('#tpOk').textContent=ok;beep(988,.1);if(navigator.vibrate)navigator.vibrate(40);sendEv('win')}
+    else{no++;b.classList.add('no');$$('#tpBody .tpopt').forEach(x=>{if(+x.dataset.k===q.a)x.classList.add('ok')});buzz();if(navigator.vibrate)navigator.vibrate([60,40,60]);sendEv('frz')}
     push()});
   const es=new EventSource(RELAY+P.r+'/sse');
   es.onopen=()=>{const n=$('#tpNet');if(n)n.textContent='🟢 Đã kết nối với máy chiếu';push()};
   es.onerror=()=>{const n=$('#tpNet');if(n)n.textContent='🟠 Mất kết nối, đang thử lại…'};
   es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}
-    if(d.e==='start'&&d.g!==g)start(d);
+    if(d.e==='start'&&d.g!==g){start(d);if(d.qi!=null&&d.rd!=null){rd=d.rd;showQ(+d.qi)}else setTimeout(()=>{if(run&&rd===-1)push()},2500)}
+    if(d.e==='q'&&d.g===g&&run&&d.rd!==rd){rd=d.rd;showQ(+d.qi)}
     if(d.e==='pause'&&d.g===g){paused=true;left=d.ms;tick();$('#tpBody').insertAdjacentHTML('afterbegin','<div class="note" id="tpPause">⏸ Thầy cô đang tạm dừng</div>')}
     if(d.e==='resume'&&d.g===g){paused=false;left=d.ms;$('#tpPause')?.remove()}
     if(d.e==='end'&&d.g===g){run=false;clearInterval(timer);const win=d.w===P.s;
