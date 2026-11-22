@@ -1278,7 +1278,7 @@ async function tugPhoneSetup(){
     for(let i=0;i<parts.length;i++){const r=await fetch(RELAY+TG.topic,{method:'POST',body:'POOL|'+i+'|'+parts.length+'|'+parts[i]});if(!r.ok)throw 0}
     short=true}catch(e){}
   for(const s of ['L','R']){const base={v:2,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L};if(!short)base.p=pool;
-    TG.links[s]=location.origin+location.pathname+'#t='+await pack(base)}
+    TG.links[s]=location.origin+location.pathname+'?v='+TG.topic.slice(-6)+'#t='+await pack(base)}
   ['L','R'].forEach(s=>{const el=$('#tgSide'+s);el.innerHTML=`<div class="tgq" style="font-size:clamp(20px,2.4vw,36px);flex:0 0 auto">📱 ${esc(s==='L'?S.tug.L:S.tug.R)} quét mã</div>
     <div class="tgqr"><div data-qr></div></div><div class="tgjoin" data-join>Chưa có máy nào vào</div><button class="tgb" data-tg="copy">📋 Chép link gửi Zalo cho đội</button>`;
     const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:280,height:280,correctLevel:TG.links[s].length<600?QRCode.CorrectLevel.M:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
