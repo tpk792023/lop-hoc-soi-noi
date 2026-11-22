@@ -594,6 +594,34 @@ async function unpack(str){const t=str[0];let bytes=ub64u(str.slice(1));
 
 /* ============ KÊNH NỘP BÀI (ntfy.sh – không cần tài khoản) ============ */
 const RELAY='https://ntfy.sh/';
+/* Kênh tin nhắn cho Kéo co trên điện thoại và nút "Chuyển sang máy khác":
+   dùng máy chủ Cloudflare của thầy (không giới hạn 250 tin/ngày như ntfy.sh); máy chủ chưa có bản mới thì tự dùng ntfy.sh. */
+const WRELAY=(jget('lhsn_wrelay')||'https://oxide-lop.phuockhai79.workers.dev')+'/tug/';
+let WOK=null;
+async function wReady(){if(WOK!==null)return WOK;try{const r=await fetch(WRELAY+'kiemtra-kenh?since=-1',{cache:'no-store'});WOK=r.ok&&(await r.json()).ok===true}catch(e){WOK=false}return WOK}
+function chan(w,topic){const url=(w?WRELAY:RELAY)+topic;
+  return{w,
+    send:body=>fetch(url,{method:'POST',body}),
+    /* mọi tin đã có trên kênh (để nhận bộ câu hỏi, dữ liệu chuyển máy) */
+    async all(){if(w){const d=await (await fetch(url+'?since=0',{cache:'no-store'})).json();return (d.items||[]).map(x=>x.m)}
+      return (await (await fetch(url+'/json?poll=1&since=all')).text()).split('\n').map(l=>{try{return JSON.parse(l)}catch(_){return null}}).filter(m=>m&&m.event==='message').map(m=>m.message||'')},
+    /* nghe tin mới; onState(true/false) báo kết nối; trả về hàm dừng nghe */
+    listen(onText,onState){
+      if(!w){const es=new EventSource(url+'/sse');es.onopen=()=>onState&&onState(true);es.onerror=()=>onState&&onState(false);
+        es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;onText(m.message||'')};return()=>es.close()}
+      let since=-1,stop=false,st=null,tm;
+      const tick=async()=>{if(stop)return;let wait=600;
+        try{const r=await fetch(url+'?since='+since,{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();if(stop)return;
+          if(st!==true){st=true;onState&&onState(true)}
+          if(since>=0)for(const it of d.items||[])onText(it.m);since=d.last??since}
+        catch(e){if(st!==false){st=false;onState&&onState(false)}wait=2000}
+        tm=setTimeout(tick,wait)};
+      tick();return()=>{stop=true;clearTimeout(tm)}}}}
+/* gửi / nhận một gói dài, chia nhỏ thành nhiều tin "TÊN|i|n|phần" */
+async function chanSendBig(ch,tag,str,size){const parts=[];for(let i=0;i<str.length;i+=size)parts.push(str.slice(i,i+size));if(!parts.length)parts.push('');
+  for(let i=0;i<parts.length;i++){const r=await ch.send(tag+'|'+i+'|'+parts.length+'|'+parts[i]);if(!r.ok)throw new Error('máy chủ báo lỗi '+r.status)}}
+function chanJoin(msgs,tag){let got={},n=0;for(const t of msgs){if(!t.startsWith(tag+'|'))continue;const [,i,c,...d]=t.split('|');if(+i===0)got={};got[+i]=d.join('|');n=+c}
+  return n&&Object.keys(got).length===n?Array.from({length:n},(_,i)=>got[i]).join(''):null}
 async function sendSub(room,payload,onWait){
   const packed=await pack(payload),N=Math.ceil(packed.length/3000);
   for(let i=0;i<N;i++){const body=`LHSN1|${payload.sub}|${i}|${N}|${packed.slice(i*3000,(i+1)*3000)}`;
@@ -880,8 +908,9 @@ async function moveOut(){
   document.body.appendChild(ov);ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-x]'))ov.remove()});
   const st=ov.querySelector('[data-st]');
   try{const img=jget('lhsn_tugimg')||{};const data={v:1,bank:S.bank,tug:S.tug,sets:S.sets,drag:S.drag,img};
-    const topic='lhsn-mv-'+rid(16);
-    const r=await fetch(RELAY+topic,{method:'PUT',body:await pack(data),headers:{Filename:'lop-hoc-soi-noi.txt'}});if(!r.ok)throw new Error('máy chủ báo lỗi '+r.status);
+    const w=await wReady(),topic=(w?'lhsn-mw-':'lhsn-mv-')+rid(16),z=await pack(data);
+    if(w)await chanSendBig(chan(true,topic),'MV',z,700000);
+    else{const r=await fetch(RELAY+topic,{method:'PUT',body:z,headers:{Filename:'lop-hoc-soi-noi.txt'}});if(!r.ok)throw new Error(r.status===429?'kênh ntfy.sh hết lượt hôm nay':'máy chủ báo lỗi '+r.status)}
     const link=location.origin+location.pathname+'#mv='+topic;const qd=ov.querySelector('[data-qr]');
     if(window.QRCode)new QRCode(qd,{text:link,width:260,height:260,correctLevel:QRCode.CorrectLevel.M});else qd.remove();
     st.innerHTML=`Mở camera điện thoại (hoặc Zalo) <b>quét mã này</b>, rồi bấm Đồng ý trên điện thoại.`;
@@ -890,9 +919,12 @@ async function moveOut(){
   catch(e){st.textContent='❌ Không gửi được ('+e.message+'). Kiểm tra mạng rồi thử lại.'}}
 async function moveIn(){if(!location.hash.startsWith('#mv='))return;const topic=location.hash.slice(4).replace(/[^\w-]/g,'');history.replaceState(null,'',location.pathname);if(!topic)return;
   try{toast('⏳ Đang nhận câu hỏi…',3000);
-    const r=await fetch(RELAY+topic+'/json?poll=1&since=all');const ms=(await r.text()).split('\n').map(l=>{try{return JSON.parse(l)}catch(_){return null}}).filter(m=>m&&m.attachment&&m.attachment.url);
-    if(!ms.length)throw new Error('mã đã quá 3 giờ hoặc chưa gửi xong — bấm Chuyển lại trên máy kia');
-    const d=await unpack(await (await fetch(ms[ms.length-1].attachment.url)).text());
+    let z=null;
+    if(topic.startsWith('lhsn-mw-'))z=chanJoin(await chan(true,topic).all(),'MV');
+    else{const r=await fetch(RELAY+topic+'/json?poll=1&since=all');const ms=(await r.text()).split('\n').map(l=>{try{return JSON.parse(l)}catch(_){return null}}).filter(m=>m&&m.attachment&&m.attachment.url);
+      if(ms.length)z=await (await fetch(ms[ms.length-1].attachment.url)).text()}
+    if(!z)throw new Error('mã đã quá hạn hoặc chưa gửi xong — bấm Chuyển lại trên máy kia');
+    const d=await unpack(z);
     const nImg=Object.keys(d.img||{}).length;
     if(!confirm(`Nhận từ máy kia:\n• ${(d.sets||[]).length} bộ câu hỏi đã lưu\n• ${parseQs(d.tug&&d.tug.qs||'').length} câu hỏi Kéo co${nImg?'\n• Hình 2 đội':''}\n\nCâu hỏi đang dùng trên máy này sẽ thay bằng bản nhận về. Danh sách lớp, điểm vẫn giữ nguyên. Đồng ý?`))return;
     if(typeof d.bank==='string')S.bank=d.bank;if(d.tug)S.tug=Object.assign(defaults().tug,d.tug);
@@ -1215,7 +1247,7 @@ function tugOpen(mode){
     ['L','R'].forEach(s=>$('#tgSide'+s).innerHTML=`<div class="tgq">${esc(s==='L'?S.tug.L:S.tug.R)}</div><div class="tgopts"></div>`)}
   else tugPhoneSetup();
 }
-function tugClose(){tugStop();if(TG.es){TG.es.close();TG.es=null}$('#tugGame').hidden=true;document.body.style.overflow='';if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
+function tugClose(){tugStop();if(TG.unl){TG.unl();TG.unl=null}$('#tugGame').hidden=true;document.body.style.overflow='';if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}
 function tugCover(html){const c=$('#tgCover');if(!c)return;c.innerHTML=html;c.hidden=!html}
 function tugAct(a,s){if(a==='start')tugStart();if(a==='again')tugOpen(TG.mode);if(a==='exit')tugClose();if(a==='resume')tugPause();
   if(a==='award'){const w=TG.winner;const n=w==='L'?S.tug.L:S.tug.R;if(S.groups.some(g=>g.name===n))addScore(null,n,3);else addScore(null,n,3);toast('Đã cộng 3 điểm thi đua cho '+n);$('[data-tg="award"]').disabled=true}
@@ -1267,31 +1299,28 @@ function tugFinish(w,timeUp){if(!TG.run)return;tugStop();TG.winner=w;
     <div class="row" style="justify-content:center"><button class="bigplay one" data-tg="again">↺ Chơi lại</button>${w?'<button class="tgb" data-tg="award">＋3 điểm thi đua</button>':''}<button class="tgb" data-tg="exit">← Thoát</button></div>`);
   if(w){confetti(90);ding();setTimeout(ding,350)}else beep(440,.3)}
 
-/* ----- Kéo co: 2 đội chơi trên điện thoại (qua ntfy.sh) ----- */
-async function tugSend(o){try{await fetch(RELAY+TG.topic,{method:'POST',body:'TUG|'+JSON.stringify(o)})}catch(e){}}
+/* ----- Kéo co: 2 đội chơi trên điện thoại (qua máy chủ của thầy, dự phòng ntfy.sh) ----- */
+async function tugSend(o){try{await TG.ch.send('TUG|'+JSON.stringify(o))}catch(e){}}
 async function tugPhoneSetup(){
-  TG.topic='lhsn-tug-'+rid(16);TG.dev={};TG.g='';
+  TG.topic='lhsn-tug-'+rid(16);TG.dev={};TG.g='';TG.ch=chan(await wReady(),TG.topic);
   const pool=tugPool().map(x=>({q:x.q,o:x.opts,a:x.ans}));
-  /* Link ngắn cho mã QR: bộ câu hỏi gửi lên kênh ntfy (lưu 12 giờ), link chỉ chứa mã phòng. Không gửi được thì nhúng câu hỏi vào link như cũ. */
+  /* Link ngắn cho mã QR: bộ câu hỏi gửi lên kênh, link chỉ chứa mã phòng. Không gửi được thì nhúng câu hỏi vào link như cũ. */
   let short=false;
-  try{const z=await pack(pool),parts=[];for(let i=0;i<z.length;i+=3000)parts.push(z.slice(i,i+3000));
-    for(let i=0;i<parts.length;i++){const r=await fetch(RELAY+TG.topic,{method:'POST',body:'POOL|'+i+'|'+parts.length+'|'+parts[i]});if(!r.ok)throw 0}
-    short=true}catch(e){}
-  for(const s of ['L','R']){const base={v:2,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L};if(!short)base.p=pool;
+  try{await chanSendBig(TG.ch,'POOL',await pack(pool),3000);short=true}catch(e){}
+  for(const s of ['L','R']){const base={v:2,r:TG.topic,s,n:s==='L'?S.tug.L:S.tug.R,o:s==='L'?S.tug.R:S.tug.L};if(TG.ch.w)base.w=1;if(!short)base.p=pool;
     TG.links[s]=location.origin+location.pathname+'?v='+TG.topic.slice(-6)+'#t='+await pack(base)}
   ['L','R'].forEach(s=>{const el=$('#tgSide'+s);el.innerHTML=`<div class="tgq" style="font-size:clamp(20px,2.4vw,36px);flex:0 0 auto">📱 ${esc(s==='L'?S.tug.L:S.tug.R)} quét mã</div>
     <div class="tgqr"><div data-qr></div></div><div class="tgjoin" data-join>Chưa có máy nào vào</div><button class="tgb" data-tg="copy">📋 Chép link gửi Zalo cho đội</button>`;
-    const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:280,height:280,correctLevel:TG.links[s].length<600?QRCode.CorrectLevel.M:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else qd.textContent='Dùng nút Chép link bên dưới'});
+    const qd=el.querySelector('[data-qr]');if(window.QRCode&&TG.links[s].length<2600){try{new QRCode(qd,{text:TG.links[s],width:280,height:280,correctLevel:TG.links[s].length<600?QRCode.CorrectLevel.M:QRCode.CorrectLevel.L})}catch(e){qd.textContent='Link dài — dùng nút Chép link'}}else{qd.style.cssText='color:#1f2937;max-width:240px;font-weight:700;padding:8px';qd.textContent='⚠️ Chưa tạo được mã QR (không gửi được câu hỏi lên mạng). Dùng nút Chép link bên dưới, hoặc chơi trên 1 màn hình.'}});
   tugCover(`<div class="tgbig">Hai đội quét mã QR</div><div>Mỗi đội dùng điện thoại quét mã ở phía đội mình (nhiều máy cùng đội cũng được). Khi các máy đã vào, bấm Bắt đầu.</div>${(/^(localhost|127\.|\[::1\])/.test(location.hostname)||location.protocol==='file:')?'<div class="note">⚠️ Trang đang mở trên máy này (file hoặc localhost) nên điện thoại không mở được mã QR. Hãy mở trang đã đưa lên mạng (ví dụ GitHub Pages) rồi bấm lại.</div>':''}<button class="bigplay two" data-tg="start">▶ Bắt đầu</button>`);
-  if(TG.es)TG.es.close();
-  TG.es=new EventSource(RELAY+TG.topic+'/sse');
-  TG.es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}tugPhoneMsg(d)};
+  if(TG.unl)TG.unl();
+  TG.unl=TG.ch.listen(t=>{if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}tugPhoneMsg(d)});
 }
 function tugPhoneMsg(d){
   if(d.e!=='st'||!d.id||!(d.s==='L'||d.s==='R'))return;
   let dev=TG.dev[d.id];const isNew=!dev;if(!dev)dev=TG.dev[d.id]={s:d.s,ok:0,g:''};
   if(TG.run&&d.g!==TG.g){if(isNew||dev.g!==TG.g){dev.g='';tugSend({e:'start',g:TG.g,ms:TG.left,n:S.tug.target,qi:TG.rdDone?null:TG.qi,rd:TG.rdDone?null:TG.rd})}tugJoined();return}
-  if(TG.run&&d.g===TG.g&&!d.ev&&d.rd!==TG.rd&&!TG.rdDone){const now=Date.now();if(!TG.qsent||now-TG.qsent>1500){TG.qsent=now;tugSend({e:'q',g:TG.g,qi:TG.qi,rd:TG.rd})}}
+  if(TG.run&&d.g===TG.g&&d.rd!==TG.rd&&!TG.rdDone){const now=Date.now();if(!TG.qsent||now-TG.qsent>1500){TG.qsent=now;tugSend({e:'q',g:TG.g,qi:TG.qi,rd:TG.rd})}}
   if(TG.run&&d.g===TG.g){ /* 2 đội luôn trả lời chung 1 câu: đội đúng trước kéo dây, rồi cả hai chuyển câu mới; đội sai bị đóng băng */
     const nm=s=>s==='L'?S.tug.L:S.tug.R;
     if(d.ev==='win'&&d.rd===TG.rd&&!TG.rdDone&&!TG.frz[d.s]){TG.rdDone=true;ding();tugPull(d.s,1);tugReveal();tugRoundMsg('✅ '+nm(d.s)+' trả lời đúng trước, +1');setTimeout(()=>{if(TG.run)tugNewRound()},1800)}
@@ -1313,11 +1342,9 @@ function tugPhoneSide(s,qi){if(TG.mode!=='two')return;const P=tugPool();const q=
 async function tugPhone(){
   document.body.classList.add('student');const app=$('#student');let P;
   try{P=await unpack(location.hash.slice(3))}catch(e){app.innerHTML='<div class="card"><h2>Link bị hỏng</h2><p>Hãy quét lại mã QR trên máy chiếu.</p></div>';return}
+  const ch=chan(!!P.w,P.r);
   if(!P.p){app.innerHTML='<div class="card"><h2>⏳ Đang tải câu hỏi…</h2></div>';
-    for(let tries=0;tries<6&&!P.p;tries++){try{const r=await fetch(RELAY+P.r+'/json?poll=1&since=all');const txt=await r.text();const got={};let n=0;
-        for(const line of txt.split('\n')){if(!line.trim())continue;let m;try{m=JSON.parse(line)}catch(_){continue}const t=m.message||'';if(!t.startsWith('POOL|'))continue;
-          const [,i,c,...d]=t.split('|');if(+i===0&&Object.keys(got).length)for(const k in got)delete got[k];got[+i]=d.join('|');n=+c}
-        if(n&&Object.keys(got).length===n)P.p=await unpack(Array.from({length:n},(_,i)=>got[i]).join(''))}catch(e){}
+    for(let tries=0;tries<6&&!P.p;tries++){try{const z=chanJoin(await ch.all(),'POOL');if(z)P.p=await unpack(z)}catch(e){}
       if(!P.p)await new Promise(r=>setTimeout(r,1500))}
     if(!P.p){app.innerHTML='<div class="card"><h2>Chưa tải được câu hỏi</h2><p>Kiểm tra mạng rồi quét lại mã QR trên máy chiếu.</p></div>';return}}
   const L=P.s==='L',col=L?'#2563eb':'#dc2626';document.title='Kéo co – '+P.n;
@@ -1327,32 +1354,30 @@ async function tugPhone(){
     <div id="tpBody"><div class="dstart">⏳ Chờ thầy cô bấm <b>Bắt đầu</b> trên máy chiếu…<div class="small" id="tpNet" style="margin-top:8px">Đang kết nối…</div></div></div>`;
   let sending=false,dirty=false;
   async function push(){if(sending){dirty=true;return}sending=true;dirty=false;
-    try{const r=await fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd})});if(!r.ok)dirty=true}catch(e){dirty=true}
+    try{const r=await ch.send('TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd}));if(!r.ok)dirty=true}catch(e){dirty=true}
     sending=false;if(dirty)setTimeout(push,r429())}
   const r429=()=>800;
-  let rd=-1;
+  let rd=-1,busyAt=0;
   /* câu hỏi do máy chiếu gửi xuống, cả hai đội nhận cùng một câu */
   function showQ(i){qi=i;q=P.p[i];if(!q)return;busy=false;
     const order=q.o.length===2?[0,1]:shuffle(q.o.map((_,k)=>k));
     $('#tpBody').innerHTML=(paused?'<div class="note" id="tpPause">⏸ Thầy cô đang tạm dừng</div>':'')+`<div class="tpq">${fm(q.q)}</div><div class="tpopts">${order.map(oi=>`<button class="tpopt" data-k="${oi}" style="border-color:${col}">${fm(q.o[oi])}</button>`).join('')}</div>`;push()}
-  function sendEv(ev){fetch(RELAY+P.r,{method:'POST',body:'TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd,ev})}).catch(()=>{})}
+  function sendEv(ev){ch.send('TUG|'+JSON.stringify({e:'st',id,s:P.s,g,ok,no,q:qi,rd,ev})).catch(()=>{})}
   function tick(){$('#tpClock').textContent='⏰ '+Math.floor(Math.ceil(left/1000)/60)+':'+String(Math.ceil(left/1000)%60).padStart(2,'0')}
   function start(d){g=d.g;ok=0;no=0;used=[];left=d.ms;run=true;paused=false;$('#tpOk').textContent=0;clearInterval(timer);let last=Date.now();
-    timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(!run||paused)return;left=Math.max(0,left-dt);tick();if(!left){run=false;clearInterval(timer)}},250);tick();beep(784,.15);rd=-1;$('#tpBody').innerHTML='<div class="dstart">⏳ Đang chờ câu hỏi…</div>'}
-  $('#tpBody').addEventListener('click',e=>{const b=e.target.closest('.tpopt');if(!b||!run||paused||busy||!q)return;busy=true;const k=+b.dataset.k;
+    timer=setInterval(()=>{const now=Date.now(),dt=now-last;last=now;if(!run||paused)return;left=Math.max(0,left-dt);tick();if(busy&&busyAt&&now-busyAt>5000){busyAt=0;push()}if(!left){run=false;clearInterval(timer)}},250);tick();beep(784,.15);rd=-1;$('#tpBody').innerHTML='<div class="dstart">⏳ Đang chờ câu hỏi…</div>'}
+  $('#tpBody').addEventListener('click',e=>{const b=e.target.closest('.tpopt');if(!b||!run||paused||busy||!q)return;busy=true;busyAt=Date.now();const k=+b.dataset.k;
     if(k===q.a){b.classList.add('ok');ok++;$('#tpOk').textContent=ok;beep(988,.1);if(navigator.vibrate)navigator.vibrate(40);sendEv('win')}
     else{no++;b.classList.add('no');$$('#tpBody .tpopt').forEach(x=>{if(+x.dataset.k===q.a)x.classList.add('ok')});buzz();if(navigator.vibrate)navigator.vibrate([60,40,60]);sendEv('frz')}
     push()});
-  const es=new EventSource(RELAY+P.r+'/sse');
-  es.onopen=()=>{const n=$('#tpNet');if(n)n.textContent='🟢 Đã kết nối với máy chiếu';push()};
-  es.onerror=()=>{const n=$('#tpNet');if(n)n.textContent='🟠 Mất kết nối, đang thử lại…'};
-  es.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m.event&&m.event!=='message')return;const t=m.message||'';if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}
+  ch.listen(t=>{if(!t.startsWith('TUG|'))return;let d;try{d=JSON.parse(t.slice(4))}catch(_){return}
     if(d.e==='start'&&d.g!==g){start(d);if(d.qi!=null&&d.rd!=null){rd=d.rd;showQ(+d.qi)}else setTimeout(()=>{if(run&&rd===-1)push()},2500)}
     if(d.e==='q'&&d.g===g&&run&&d.rd!==rd){rd=d.rd;showQ(+d.qi)}
     if(d.e==='pause'&&d.g===g){paused=true;left=d.ms;tick();$('#tpBody').insertAdjacentHTML('afterbegin','<div class="note" id="tpPause">⏸ Thầy cô đang tạm dừng</div>')}
     if(d.e==='resume'&&d.g===g){paused=false;left=d.ms;$('#tpPause')?.remove()}
     if(d.e==='end'&&d.g===g){run=false;clearInterval(timer);const win=d.w===P.s;
-      $('#tpBody').innerHTML=`<div class="tpq" style="font-size:30px">${d.w?(win?'🏆 Đội em thắng!':'😅 Đội '+esc(P.o)+' thắng'):'🤝 Hai đội hoà!'}</div><div class="dstart">Đội em trả lời đúng ${ok} câu.<br>Chờ thầy cô bắt đầu ván mới…</div>`;if(win){confetti(60);ding()}}};
+      $('#tpBody').innerHTML=`<div class="tpq" style="font-size:30px">${d.w?(win?'🏆 Đội em thắng!':'😅 Đội '+esc(P.o)+' thắng'):'🤝 Hai đội hoà!'}</div><div class="dstart">Đội em trả lời đúng ${ok} câu.<br>Chờ thầy cô bắt đầu ván mới…</div>`;if(win){confetti(60);ding()}}},
+    on=>{const n=$('#tpNet');if(n)n.textContent=on?'🟢 Đã kết nối với máy chiếu':'🟠 Mất kết nối, đang thử lại…';if(on)push()});
 }
 
 /* ---------- PHIẾU THẢO LUẬN / BÀI TẬP ---------- */
